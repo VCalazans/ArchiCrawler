@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ScraperModule } from './scraper/scraper.module';
 import { CoreModule } from './core/core.module';
 import { HealthModule } from './health/health.module';
+import { MCPModule } from './mcp/mcp.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { HealthModule } from './health/health.module';
     ScraperModule,
     CoreModule,
     HealthModule,
+    MCPModule,
   ],
 })
 export class AppModule {}

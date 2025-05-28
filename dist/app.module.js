@@ -13,6 +13,7 @@ const throttler_1 = require("@nestjs/throttler");
 const scraper_module_1 = require("./scraper/scraper.module");
 const core_module_1 = require("./core/core.module");
 const health_module_1 = require("./health/health.module");
+const mcp_module_1 = require("./mcp/mcp.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -30,6 +31,7 @@ exports.AppModule = AppModule = __decorate([
             scraper_module_1.ScraperModule,
             core_module_1.CoreModule,
             health_module_1.HealthModule,
+            mcp_module_1.MCPModule,
         ],
     })
 ], AppModule);

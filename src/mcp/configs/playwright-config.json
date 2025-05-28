@@ -1,0 +1,33 @@
+{
+  "browser": "chromium",
+  "headless": false,
+  "args": [],
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "permissions": {
+    "allowedDomains": ["*"],
+    "allowFileUploads": true,
+    "allowDownloads": true,
+    "maxFileSize": "10MB"
+  },
+  "timeouts": {
+    "navigation": 30000,
+    "action": 5000,
+    "screenshot": 10000
+  },
+  "features": {
+    "screenshots": true,
+    "pdf": true,
+    "networkRequests": true,
+    "consoleMessages": true,
+    "tabs": true,
+    "vision": true
+  },
+  "security": {
+    "allowJavaScript": true,
+    "allowPopups": false,
+    "allowGeolocation": false
+  }
+} 
