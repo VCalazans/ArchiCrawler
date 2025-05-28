@@ -12,18 +12,23 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: false,
+        skipMissingProperties: false,
     }));
     const config = new swagger_1.DocumentBuilder()
-        .setTitle('Scraper API')
-        .setDescription('A unified API for web scraping with multiple engines')
+        .setTitle('ArchiCrawler API')
+        .setDescription('API unificada para web scraping com múltiplos engines e sistema MCP')
         .setVersion('1.0')
         .addTag('scraping')
+        .addTag('auth')
+        .addTag('mcp')
+        .addBearerAuth()
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
     await app.listen(3001);
-    console.log(`Application is running on: ${await app.getUrl()}`);
+    console.log(`🚀 ArchiCrawler rodando em: ${await app.getUrl()}`);
+    console.log(`📚 Documentação Swagger: ${await app.getUrl()}/api`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const mcp_manager_service_1 = require("./mcp-manager.service");
 const mcp_servers_config_1 = require("./mcp-servers.config");
+const api_key_guard_1 = require("../auth/guards/api-key.guard");
+const mcp_auth_guard_1 = require("../auth/guards/mcp-auth.guard");
 class CallToolDto {
 }
 class StartServerDto {
@@ -277,6 +279,8 @@ __decorate([
 ], MCPController.prototype, "getConnectionsInfo", null);
 __decorate([
     (0, common_1.Post)('servers/:serverName/start'),
+    (0, common_1.UseGuards)(api_key_guard_1.ApiKeyGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-API-Key', description: 'API Key para autenticação' }),
     (0, swagger_1.ApiOperation)({ summary: 'Iniciar um servidor MCP específico' }),
     (0, swagger_1.ApiParam)({ name: 'serverName', description: 'Nome do servidor MCP' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Servidor iniciado com sucesso' }),
@@ -287,6 +291,8 @@ __decorate([
 ], MCPController.prototype, "startServer", null);
 __decorate([
     (0, common_1.Post)('servers/:serverName/stop'),
+    (0, common_1.UseGuards)(api_key_guard_1.ApiKeyGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-API-Key', description: 'API Key para autenticação' }),
     (0, swagger_1.ApiOperation)({ summary: 'Parar um servidor MCP específico' }),
     (0, swagger_1.ApiParam)({ name: 'serverName', description: 'Nome do servidor MCP' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Servidor parado com sucesso' }),
@@ -307,6 +313,8 @@ __decorate([
 ], MCPController.prototype, "getServerStatus", null);
 __decorate([
     (0, common_1.Get)('servers/:serverName/tools'),
+    (0, common_1.UseGuards)(api_key_guard_1.ApiKeyGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-API-Key', description: 'API Key para autenticação' }),
     (0, swagger_1.ApiOperation)({ summary: 'Listar ferramentas de um servidor MCP' }),
     (0, swagger_1.ApiParam)({ name: 'serverName', description: 'Nome do servidor MCP' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Lista de ferramentas' }),
@@ -317,6 +325,9 @@ __decorate([
 ], MCPController.prototype, "listTools", null);
 __decorate([
     (0, common_1.Post)('call-tool'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Chamar uma ferramenta de um servidor MCP' }),
     (0, swagger_1.ApiBody)({ type: CallToolDto }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Ferramenta executada com sucesso' }),
@@ -327,6 +338,9 @@ __decorate([
 ], MCPController.prototype, "callTool", null);
 __decorate([
     (0, common_1.Post)('playwright/navigate'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Navegar para uma URL usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Navegação realizada com sucesso' }),
     __param(0, (0, common_1.Body)()),
@@ -336,6 +350,9 @@ __decorate([
 ], MCPController.prototype, "playwrightNavigate", null);
 __decorate([
     (0, common_1.Post)('playwright/click'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Clicar em um elemento usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Clique realizado com sucesso' }),
     __param(0, (0, common_1.Body)()),
@@ -345,6 +362,9 @@ __decorate([
 ], MCPController.prototype, "playwrightClick", null);
 __decorate([
     (0, common_1.Post)('playwright/fill'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Preencher um campo usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Campo preenchido com sucesso' }),
     __param(0, (0, common_1.Body)()),
@@ -354,6 +374,9 @@ __decorate([
 ], MCPController.prototype, "playwrightFill", null);
 __decorate([
     (0, common_1.Get)('playwright/snapshot'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Obter snapshot da página usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Snapshot obtido com sucesso' }),
     __metadata("design:type", Function),
@@ -362,6 +385,9 @@ __decorate([
 ], MCPController.prototype, "playwrightSnapshot", null);
 __decorate([
     (0, common_1.Post)('playwright/screenshot'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Tirar screenshot usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Screenshot realizado com sucesso' }),
     __param(0, (0, common_1.Body)()),
@@ -371,6 +397,9 @@ __decorate([
 ], MCPController.prototype, "playwrightScreenshot", null);
 __decorate([
     (0, common_1.Get)('playwright/tabs'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Listar abas usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Abas listadas com sucesso' }),
     __metadata("design:type", Function),
@@ -379,6 +408,9 @@ __decorate([
 ], MCPController.prototype, "playwrightListTabs", null);
 __decorate([
     (0, common_1.Post)('playwright/close'),
+    (0, common_1.UseGuards)(mcp_auth_guard_1.MCPAuthGuard),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' }),
+    (0, swagger_1.ApiHeader)({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' }),
     (0, swagger_1.ApiOperation)({ summary: 'Fechar navegador usando Playwright' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Navegador fechado com sucesso' }),
     __metadata("design:type", Function),

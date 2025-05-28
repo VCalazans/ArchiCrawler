@@ -10,10 +10,12 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
+const database_module_1 = require("./database/database.module");
 const scraper_module_1 = require("./scraper/scraper.module");
 const core_module_1 = require("./core/core.module");
 const health_module_1 = require("./health/health.module");
 const mcp_module_1 = require("./mcp/mcp.module");
+const auth_module_1 = require("./auth/auth.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -28,6 +30,8 @@ exports.AppModule = AppModule = __decorate([
                 ttl: 60,
                 limit: 10,
             }),
+            database_module_1.DatabaseModule,
+            auth_module_1.AuthModule,
             scraper_module_1.ScraperModule,
             core_module_1.CoreModule,
             health_module_1.HealthModule,

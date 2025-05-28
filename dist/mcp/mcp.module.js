@@ -10,11 +10,13 @@ exports.MCPModule = void 0;
 const common_1 = require("@nestjs/common");
 const mcp_manager_service_1 = require("./mcp-manager.service");
 const mcp_controller_1 = require("./mcp.controller");
+const auth_module_1 = require("../auth/auth.module");
 let MCPModule = class MCPModule {
 };
 exports.MCPModule = MCPModule;
 exports.MCPModule = MCPModule = __decorate([
     (0, common_1.Module)({
+        imports: [auth_module_1.AuthModule],
         providers: [mcp_manager_service_1.MCPManagerService],
         controllers: [mcp_controller_1.MCPController],
         exports: [mcp_manager_service_1.MCPManagerService],

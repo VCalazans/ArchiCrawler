@@ -1,7 +1,9 @@
-import { Controller, Post, Get, Body, Param, Query, OnModuleInit } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Param, Query, OnModuleInit, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiHeader, ApiBearerAuth } from '@nestjs/swagger';
 import { MCPManagerService } from './mcp-manager.service';
 import { MCP_SERVERS_CONFIG, getNetworkServers } from './mcp-servers.config';
+import { ApiKeyGuard } from '../auth/guards/api-key.guard';
+import { MCPAuthGuard } from '../auth/guards/mcp-auth.guard';
 
 class CallToolDto {
   serverName: string;
@@ -82,6 +84,8 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('servers/:serverName/start')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({ name: 'X-API-Key', description: 'API Key para autenticação' })
   @ApiOperation({ summary: 'Iniciar um servidor MCP específico' })
   @ApiParam({ name: 'serverName', description: 'Nome do servidor MCP' })
   @ApiResponse({ status: 200, description: 'Servidor iniciado com sucesso' })
@@ -105,6 +109,8 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('servers/:serverName/stop')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({ name: 'X-API-Key', description: 'API Key para autenticação' })
   @ApiOperation({ summary: 'Parar um servidor MCP específico' })
   @ApiParam({ name: 'serverName', description: 'Nome do servidor MCP' })
   @ApiResponse({ status: 200, description: 'Servidor parado com sucesso' })
@@ -140,6 +146,8 @@ export class MCPController implements OnModuleInit {
   }
 
   @Get('servers/:serverName/tools')
+  @UseGuards(ApiKeyGuard)
+  @ApiHeader({ name: 'X-API-Key', description: 'API Key para autenticação' })
   @ApiOperation({ summary: 'Listar ferramentas de um servidor MCP' })
   @ApiParam({ name: 'serverName', description: 'Nome do servidor MCP' })
   @ApiResponse({ status: 200, description: 'Lista de ferramentas' })
@@ -160,6 +168,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('call-tool')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Chamar uma ferramenta de um servidor MCP' })
   @ApiBody({ type: CallToolDto })
   @ApiResponse({ status: 200, description: 'Ferramenta executada com sucesso' })
@@ -184,8 +195,11 @@ export class MCPController implements OnModuleInit {
     }
   }
 
-  // Métodos específicos para Playwright (para compatibilidade)
+  // Métodos específicos para Playwright (com autenticação)
   @Post('playwright/navigate')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Navegar para uma URL usando Playwright' })
   @ApiResponse({ status: 200, description: 'Navegação realizada com sucesso' })
   async playwrightNavigate(@Body() body: { url: string }) {
@@ -197,6 +211,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('playwright/click')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Clicar em um elemento usando Playwright' })
   @ApiResponse({ status: 200, description: 'Clique realizado com sucesso' })
   async playwrightClick(@Body() body: { element: string }) {
@@ -208,6 +225,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('playwright/fill')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Preencher um campo usando Playwright' })
   @ApiResponse({ status: 200, description: 'Campo preenchido com sucesso' })
   async playwrightFill(@Body() body: { element: string; text: string }) {
@@ -219,6 +239,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Get('playwright/snapshot')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Obter snapshot da página usando Playwright' })
   @ApiResponse({ status: 200, description: 'Snapshot obtido com sucesso' })
   async playwrightSnapshot() {
@@ -230,6 +253,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('playwright/screenshot')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Tirar screenshot usando Playwright' })
   @ApiResponse({ status: 200, description: 'Screenshot realizado com sucesso' })
   async playwrightScreenshot(@Body() body: { filename?: string; raw?: boolean }) {
@@ -241,6 +267,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Get('playwright/tabs')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Listar abas usando Playwright' })
   @ApiResponse({ status: 200, description: 'Abas listadas com sucesso' })
   async playwrightListTabs() {
@@ -252,6 +281,9 @@ export class MCPController implements OnModuleInit {
   }
 
   @Post('playwright/close')
+  @UseGuards(MCPAuthGuard)
+  @ApiHeader({ name: 'X-MCP-Client-ID', description: 'ID do cliente MCP' })
+  @ApiHeader({ name: 'X-MCP-Client-Secret', description: 'Secret do cliente MCP' })
   @ApiOperation({ summary: 'Fechar navegador usando Playwright' })
   @ApiResponse({ status: 200, description: 'Navegador fechado com sucesso' })
   async playwrightClose() {
