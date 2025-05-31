@@ -19,10 +19,12 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const test_flow_entity_1 = require("../entities/test-flow.entity");
 const test_execution_entity_1 = require("../entities/test-execution.entity");
+const playwright_executor_service_1 = require("./playwright-executor.service");
 let TestFlowsService = TestFlowsService_1 = class TestFlowsService {
-    constructor(testFlowRepository, testExecutionRepository) {
+    constructor(testFlowRepository, testExecutionRepository, playwrightExecutor) {
         this.testFlowRepository = testFlowRepository;
         this.testExecutionRepository = testExecutionRepository;
+        this.playwrightExecutor = playwrightExecutor;
         this.logger = new common_1.Logger(TestFlowsService_1.name);
     }
     async create(createTestFlowDto) {
@@ -156,10 +158,29 @@ let TestFlowsService = TestFlowsService_1 = class TestFlowsService {
     }
     async executeStep(step) {
         const { type, config } = step;
-        this.logger.log(`Simulando execução do passo ${type} com config:`, config);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        if (step.timeout) {
-            await new Promise(resolve => setTimeout(resolve, step.timeout));
+        const playwrightAvailable = await this.playwrightExecutor.isPlaywrightAvailable();
+        if (playwrightAvailable) {
+            this.logger.log(`🎬 Executando passo REAL: ${step.name} (${type})`);
+            const result = await this.playwrightExecutor.executeStep({
+                id: step.id,
+                name: step.name,
+                type,
+                config,
+                timeout: step.timeout,
+                continueOnError: step.continueOnError
+            });
+            if (!result.success) {
+                throw new Error(result.error || 'Erro na execução do passo');
+            }
+            this.logger.log(`✅ Passo real executado: ${step.name} em ${result.duration}ms`);
+        }
+        else {
+            this.logger.warn(`⚠️ Playwright não disponível, executando simulação: ${step.name} (${type})`);
+            this.logger.log(`Simulando execução do passo ${type} com config:`, config);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (step.timeout) {
+                await new Promise(resolve => setTimeout(resolve, step.timeout));
+            }
         }
     }
     async getExecutions(flowId) {
@@ -190,6 +211,7 @@ exports.TestFlowsService = TestFlowsService = TestFlowsService_1 = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(test_flow_entity_1.TestFlow)),
     __param(1, (0, typeorm_1.InjectRepository)(test_execution_entity_1.TestExecution)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository])
+        typeorm_2.Repository,
+        playwright_executor_service_1.PlaywrightExecutorService])
 ], TestFlowsService);
 //# sourceMappingURL=test-flows.service.js.map

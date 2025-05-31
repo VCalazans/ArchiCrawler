@@ -13,6 +13,8 @@ const test_flows_service_1 = require("./test-flows.service");
 const test_flows_controller_1 = require("./test-flows.controller");
 const test_flow_entity_1 = require("../entities/test-flow.entity");
 const test_execution_entity_1 = require("../entities/test-execution.entity");
+const playwright_executor_service_1 = require("./playwright-executor.service");
+const mcp_module_1 = require("../mcp/mcp.module");
 let TestFlowsModule = class TestFlowsModule {
 };
 exports.TestFlowsModule = TestFlowsModule;
@@ -20,10 +22,14 @@ exports.TestFlowsModule = TestFlowsModule = __decorate([
     (0, common_1.Module)({
         imports: [
             typeorm_1.TypeOrmModule.forFeature([test_flow_entity_1.TestFlow, test_execution_entity_1.TestExecution]),
+            mcp_module_1.MCPModule,
         ],
         controllers: [test_flows_controller_1.TestFlowsController, test_flows_controller_1.TestExecutionsController],
-        providers: [test_flows_service_1.TestFlowsService],
-        exports: [test_flows_service_1.TestFlowsService],
+        providers: [
+            test_flows_service_1.TestFlowsService,
+            playwright_executor_service_1.PlaywrightExecutorService,
+        ],
+        exports: [test_flows_service_1.TestFlowsService, playwright_executor_service_1.PlaywrightExecutorService],
     })
 ], TestFlowsModule);
 //# sourceMappingURL=test-flows.module.js.map

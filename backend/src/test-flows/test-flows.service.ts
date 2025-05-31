@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TestFlow } from '../entities/test-flow.entity';
 import { TestExecution, TestExecutionStatus, ExecutionStep } from '../entities/test-execution.entity';
 import { CreateTestFlowDto } from './dto/create-test-flow.dto';
 import { UpdateTestFlowDto } from './dto/update-test-flow.dto';
 import { QueryTestFlowDto } from './dto/query-test-flow.dto';
+import { PlaywrightExecutorService } from './playwright-executor.service';
 
 @Injectable()
 export class TestFlowsService {
@@ -16,6 +17,7 @@ export class TestFlowsService {
     private testFlowRepository: Repository<TestFlow>,
     @InjectRepository(TestExecution)
     private testExecutionRepository: Repository<TestExecution>,
+    private readonly playwrightExecutor: PlaywrightExecutorService,
   ) {}
 
   async create(createTestFlowDto: CreateTestFlowDto): Promise<TestFlow> {
@@ -193,17 +195,40 @@ export class TestFlowsService {
   private async executeStep(step: any): Promise<void> {
     const { type, config } = step;
 
-    // Implementação básica dos passos de teste
-    // TODO: Integrar com MCP Service para execução real via Playwright
+    // Verificar se Playwright está disponível
+    const playwrightAvailable = await this.playwrightExecutor.isPlaywrightAvailable();
     
-    this.logger.log(`Simulando execução do passo ${type} com config:`, config);
-    
-    // Simular tempo de execução
-    await new Promise(resolve => setTimeout(resolve, 500));
+    if (playwrightAvailable) {
+      // ✅ EXECUÇÃO REAL via Playwright MCP
+      this.logger.log(`🎬 Executando passo REAL: ${step.name} (${type})`);
+      
+      const result = await this.playwrightExecutor.executeStep({
+        id: step.id,
+        name: step.name,
+        type,
+        config,
+        timeout: step.timeout,
+        continueOnError: step.continueOnError
+      });
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Erro na execução do passo');
+      }
+      
+      this.logger.log(`✅ Passo real executado: ${step.name} em ${result.duration}ms`);
+      
+    } else {
+      // 🔄 FALLBACK: Simulação (quando Playwright não está disponível)
+      this.logger.warn(`⚠️ Playwright não disponível, executando simulação: ${step.name} (${type})`);
+      this.logger.log(`Simulando execução do passo ${type} com config:`, config);
+      
+      // Simular tempo de execução
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Aguardar timeout se especificado
-    if (step.timeout) {
-      await new Promise(resolve => setTimeout(resolve, step.timeout));
+      // Aguardar timeout se especificado
+      if (step.timeout) {
+        await new Promise(resolve => setTimeout(resolve, step.timeout));
+      }
     }
   }
 

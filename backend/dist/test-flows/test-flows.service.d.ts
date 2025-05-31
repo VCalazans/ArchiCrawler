@@ -4,11 +4,13 @@ import { TestExecution } from '../entities/test-execution.entity';
 import { CreateTestFlowDto } from './dto/create-test-flow.dto';
 import { UpdateTestFlowDto } from './dto/update-test-flow.dto';
 import { QueryTestFlowDto } from './dto/query-test-flow.dto';
+import { PlaywrightExecutorService } from './playwright-executor.service';
 export declare class TestFlowsService {
     private testFlowRepository;
     private testExecutionRepository;
+    private readonly playwrightExecutor;
     private readonly logger;
-    constructor(testFlowRepository: Repository<TestFlow>, testExecutionRepository: Repository<TestExecution>);
+    constructor(testFlowRepository: Repository<TestFlow>, testExecutionRepository: Repository<TestExecution>, playwrightExecutor: PlaywrightExecutorService);
     create(createTestFlowDto: CreateTestFlowDto): Promise<TestFlow>;
     findAll(query: QueryTestFlowDto): Promise<{
         data: TestFlow[];

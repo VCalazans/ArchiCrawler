@@ -15,10 +15,14 @@ import { TestFlowsService } from './test-flows.service';
 import { CreateTestFlowDto } from './dto/create-test-flow.dto';
 import { UpdateTestFlowDto } from './dto/update-test-flow.dto';
 import { QueryTestFlowDto } from './dto/query-test-flow.dto';
+import { PlaywrightExecutorService } from './playwright-executor.service';
 
 @Controller('test-flows')
 export class TestFlowsController {
-  constructor(private readonly testFlowsService: TestFlowsService) {}
+  constructor(
+    private readonly testFlowsService: TestFlowsService,
+    private readonly playwrightExecutor: PlaywrightExecutorService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -97,6 +101,22 @@ export class TestFlowsController {
       success: true,
       data: execution,
       message: 'Execução iniciada com sucesso',
+    };
+  }
+
+  @Get('playwright/status')
+  async getPlaywrightStatus() {
+    const isAvailable = await this.playwrightExecutor.isPlaywrightAvailable();
+    
+    return {
+      success: true,
+      data: {
+        playwrightAvailable: isAvailable,
+        executionMode: isAvailable ? 'real' : 'simulation',
+        message: isAvailable 
+          ? 'Playwright MCP está ativo - execuções reais disponíveis' 
+          : 'Playwright MCP não está ativo - execuções em modo simulação'
+      }
     };
   }
 }

@@ -18,9 +18,11 @@ const test_flows_service_1 = require("./test-flows.service");
 const create_test_flow_dto_1 = require("./dto/create-test-flow.dto");
 const update_test_flow_dto_1 = require("./dto/update-test-flow.dto");
 const query_test_flow_dto_1 = require("./dto/query-test-flow.dto");
+const playwright_executor_service_1 = require("./playwright-executor.service");
 let TestFlowsController = class TestFlowsController {
-    constructor(testFlowsService) {
+    constructor(testFlowsService, playwrightExecutor) {
         this.testFlowsService = testFlowsService;
+        this.playwrightExecutor = playwrightExecutor;
     }
     async create(createTestFlowDto) {
         if (!createTestFlowDto.userId || createTestFlowDto.userId.trim() === '') {
@@ -76,6 +78,19 @@ let TestFlowsController = class TestFlowsController {
             message: 'Execução iniciada com sucesso',
         };
     }
+    async getPlaywrightStatus() {
+        const isAvailable = await this.playwrightExecutor.isPlaywrightAvailable();
+        return {
+            success: true,
+            data: {
+                playwrightAvailable: isAvailable,
+                executionMode: isAvailable ? 'real' : 'simulation',
+                message: isAvailable
+                    ? 'Playwright MCP está ativo - execuções reais disponíveis'
+                    : 'Playwright MCP não está ativo - execuções em modo simulação'
+            }
+        };
+    }
 };
 exports.TestFlowsController = TestFlowsController;
 __decorate([
@@ -124,9 +139,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TestFlowsController.prototype, "execute", null);
+__decorate([
+    (0, common_1.Get)('playwright/status'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], TestFlowsController.prototype, "getPlaywrightStatus", null);
 exports.TestFlowsController = TestFlowsController = __decorate([
     (0, common_1.Controller)('test-flows'),
-    __metadata("design:paramtypes", [test_flows_service_1.TestFlowsService])
+    __metadata("design:paramtypes", [test_flows_service_1.TestFlowsService,
+        playwright_executor_service_1.PlaywrightExecutorService])
 ], TestFlowsController);
 let TestExecutionsController = class TestExecutionsController {
     constructor(testFlowsService) {

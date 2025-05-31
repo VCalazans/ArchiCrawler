@@ -2,9 +2,11 @@ import { TestFlowsService } from './test-flows.service';
 import { CreateTestFlowDto } from './dto/create-test-flow.dto';
 import { UpdateTestFlowDto } from './dto/update-test-flow.dto';
 import { QueryTestFlowDto } from './dto/query-test-flow.dto';
+import { PlaywrightExecutorService } from './playwright-executor.service';
 export declare class TestFlowsController {
     private readonly testFlowsService;
-    constructor(testFlowsService: TestFlowsService);
+    private readonly playwrightExecutor;
+    constructor(testFlowsService: TestFlowsService, playwrightExecutor: PlaywrightExecutorService);
     create(createTestFlowDto: CreateTestFlowDto): Promise<{
         success: boolean;
         data: import("../entities/test-flow.entity").TestFlow;
@@ -37,6 +39,14 @@ export declare class TestFlowsController {
         success: boolean;
         data: import("../entities/test-execution.entity").TestExecution;
         message: string;
+    }>;
+    getPlaywrightStatus(): Promise<{
+        success: boolean;
+        data: {
+            playwrightAvailable: boolean;
+            executionMode: string;
+            message: string;
+        };
     }>;
 }
 export declare class TestExecutionsController {
