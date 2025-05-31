@@ -33,16 +33,21 @@ let OpenAIProvider = OpenAIProvider_1 = class OpenAIProvider extends base_llm_pr
         const formattedPrompt = this.formatPromptForMCP(prompt);
         try {
             this.logger.debug(`Gerando teste com OpenAI, tokens estimados: ${this.estimateTokens(formattedPrompt)}`);
-            const completion = await client.chat.completions.create({
-                model: 'gpt-4',
+            const model = 'gpt-4o';
+            const supportsJsonMode = this.modelSupportsJsonMode(model);
+            const completionParams = {
+                model,
                 messages: [
-                    { role: 'system', content: prompt.system },
+                    { role: 'system', content: prompt.system + (supportsJsonMode ? '' : '\n\nIMPORTANTE: Responda APENAS com um JSON válido, sem texto adicional.') },
                     { role: 'user', content: formattedPrompt }
                 ],
                 temperature: 0.1,
                 max_tokens: 2000,
-                response_format: { type: 'json_object' }
-            });
+            };
+            if (supportsJsonMode) {
+                completionParams.response_format = { type: 'json_object' };
+            }
+            const completion = await client.chat.completions.create(completionParams);
             const response = completion.choices[0]?.message?.content;
             if (!response) {
                 throw new Error('Resposta vazia do OpenAI');
@@ -50,13 +55,25 @@ let OpenAIProvider = OpenAIProvider_1 = class OpenAIProvider extends base_llm_pr
             this.logger.debug(`Resposta recebida do OpenAI: ${response.substring(0, 200)}...`);
             const result = this.parseResponse(response);
             result.metadata.tokensUsed = completion.usage?.total_tokens || this.estimateTokens(response);
-            result.metadata.model = 'gpt-4';
+            result.metadata.model = model;
             return result;
         }
         catch (error) {
             this.logger.error(`Erro ao gerar teste com OpenAI: ${error.message}`);
             throw this.handleApiError(error, 'OpenAI');
         }
+    }
+    modelSupportsJsonMode(model) {
+        const supportedModels = [
+            'gpt-4o',
+            'gpt-4o-mini',
+            'gpt-4-turbo',
+            'gpt-4-turbo-preview',
+            'gpt-4-1106-preview',
+            'gpt-3.5-turbo-1106',
+            'gpt-3.5-turbo-0125'
+        ];
+        return supportedModels.some(supported => model.includes(supported));
     }
     async validateApiKey(apiKey) {
         try {
@@ -72,27 +89,33 @@ let OpenAIProvider = OpenAIProvider_1 = class OpenAIProvider extends base_llm_pr
     }
     getSupportedModels() {
         return [
-            'gpt-4',
+            'gpt-4o',
+            'gpt-4o-mini',
             'gpt-4-turbo',
             'gpt-4-turbo-preview',
+            'gpt-4',
             'gpt-3.5-turbo',
             'gpt-3.5-turbo-16k'
         ];
     }
-    async generateTestWithModel(prompt, apiKey, model = 'gpt-4') {
+    async generateTestWithModel(prompt, apiKey, model = 'gpt-4o') {
         const client = this.createClient(apiKey);
         const formattedPrompt = this.formatPromptForMCP(prompt);
         try {
-            const completion = await client.chat.completions.create({
+            const supportsJsonMode = this.modelSupportsJsonMode(model);
+            const completionParams = {
                 model,
                 messages: [
-                    { role: 'system', content: prompt.system },
+                    { role: 'system', content: prompt.system + (supportsJsonMode ? '' : '\n\nIMPORTANTE: Responda APENAS com um JSON válido, sem texto adicional.') },
                     { role: 'user', content: formattedPrompt }
                 ],
                 temperature: 0.1,
                 max_tokens: model.includes('gpt-4') ? 2000 : 1500,
-                response_format: { type: 'json_object' }
-            });
+            };
+            if (supportsJsonMode) {
+                completionParams.response_format = { type: 'json_object' };
+            }
+            const completion = await client.chat.completions.create(completionParams);
             const response = completion.choices[0]?.message?.content;
             if (!response) {
                 throw new Error('Resposta vazia do OpenAI');

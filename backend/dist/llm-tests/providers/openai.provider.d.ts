@@ -7,6 +7,7 @@ export declare class OpenAIProvider extends BaseLLMProvider {
     constructor();
     private createClient;
     generateTest(prompt: TestPrompt, apiKey: string): Promise<GeneratedTestResult>;
+    private modelSupportsJsonMode;
     validateApiKey(apiKey: string): Promise<boolean>;
     getSupportedModels(): string[];
     generateTestWithModel(prompt: TestPrompt, apiKey: string, model?: string): Promise<GeneratedTestResult>;
