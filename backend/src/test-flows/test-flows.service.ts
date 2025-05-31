@@ -91,6 +91,18 @@ export class TestFlowsService {
   async execute(id: string, userId: string): Promise<TestExecution> {
     const testFlow = await this.findOne(id);
     
+    this.logger.log(`🎯 Iniciando execução do fluxo: ${testFlow.name} (${id})`);
+    this.logger.log(`📋 Passos encontrados: ${testFlow.steps?.length || 0}`);
+    
+    if (testFlow.steps && testFlow.steps.length > 0) {
+      this.logger.log(`📝 Detalhes dos passos:`);
+      testFlow.steps.forEach((step, index) => {
+        this.logger.log(`  ${index + 1}. ${step.name} (${step.type}) - Config: ${JSON.stringify(step.config)}`);
+      });
+    } else {
+      this.logger.warn(`⚠️ ATENÇÃO: Fluxo ${testFlow.name} não possui passos configurados!`);
+    }
+    
     if (!testFlow.isActive) {
       throw new Error('TestFlow está inativo');
     }
@@ -100,12 +112,13 @@ export class TestFlowsService {
       testFlowId: id,
       userId,
       status: TestExecutionStatus.PENDING,
-      totalSteps: testFlow.steps.length,
+      totalSteps: testFlow.steps?.length || 0,
       completedSteps: 0,
       failedSteps: 0,
     });
 
     const savedExecution = await this.testExecutionRepository.save(execution);
+    this.logger.log(`📦 Execução criada: ${savedExecution.id} com ${savedExecution.totalSteps} passos`);
 
     // Executar os passos de forma assíncrona
     this.executeSteps(savedExecution.id, testFlow).catch((error) => {
@@ -121,8 +134,12 @@ export class TestFlowsService {
     });
 
     if (!execution) {
+      this.logger.error(`❌ Execução ${executionId} não encontrada`);
       return;
     }
+
+    this.logger.log(`🚀 Iniciando execução de passos para: ${testFlow.name}`);
+    this.logger.log(`📊 Passos a executar: ${testFlow.steps?.length || 0}`);
 
     try {
       execution.status = TestExecutionStatus.RUNNING;
@@ -133,7 +150,24 @@ export class TestFlowsService {
       let completedSteps = 0;
       let failedSteps = 0;
 
+      // Verificar se existem passos para executar
+      if (!testFlow.steps || testFlow.steps.length === 0) {
+        this.logger.warn(`⚠️ Nenhum passo para executar no fluxo ${testFlow.name}`);
+        
+        // Finalizar execução como sucesso mas sem passos
+        execution.status = TestExecutionStatus.SUCCESS;
+        execution.endTime = new Date();
+        execution.duration = execution.endTime.getTime() - execution.startTime.getTime();
+        execution.completedSteps = 0;
+        execution.failedSteps = 0;
+        execution.steps = [];
+        await this.testExecutionRepository.save(execution);
+        return;
+      }
+
       for (const step of testFlow.steps) {
+        this.logger.log(`🔄 Processando passo: ${step.name} (${step.type})`);
+        
         const stepExecution: ExecutionStep = {
           stepId: step.id,
           status: TestExecutionStatus.RUNNING,
@@ -151,6 +185,8 @@ export class TestFlowsService {
           stepExecution.duration = stepExecution.endTime.getTime() - stepExecution.startTime.getTime();
           completedSteps++;
           
+          this.logger.log(`✅ Passo ${step.name} executado com sucesso em ${stepExecution.duration}ms`);
+          
         } catch (error) {
           this.logger.error(`Erro no passo ${step.name}:`, error);
           stepExecution.status = TestExecutionStatus.FAILED;
@@ -161,6 +197,7 @@ export class TestFlowsService {
 
           if (!step.continueOnError) {
             executionSteps.push(stepExecution);
+            this.logger.log(`❌ Parando execução devido a erro em ${step.name}`);
             break;
           }
         }
@@ -177,6 +214,10 @@ export class TestFlowsService {
       execution.steps = executionSteps;
 
       await this.testExecutionRepository.save(execution);
+      
+      this.logger.log(`🏁 Execução finalizada: ${execution.status}`);
+      this.logger.log(`📈 Estatísticas: ${completedSteps}/${testFlow.steps.length} passos (${failedSteps} falhas)`);
+      this.logger.log(`⏱️ Duração total: ${execution.duration}ms`);
 
       // Atualizar lastRun do TestFlow
       testFlow.lastRun = new Date();

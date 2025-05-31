@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
-import type { TestFlow } from '../types';
-import { useNotification } from './useNotification';
+import type { TestFlow, TestStep } from '../types';
 
 export const useTestFlows = (params?: {
   page?: number;
@@ -25,32 +24,18 @@ export const useTestFlow = (id: string) => {
 
 export const useCreateTestFlow = () => {
   const queryClient = useQueryClient();
-  const { showNotification } = useNotification();
 
   return useMutation({
     mutationFn: (flow: Omit<TestFlow, 'id' | 'createdAt' | 'updatedAt'>) =>
       apiService.createTestFlow(flow),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testFlows'] });
-      showNotification({
-        type: 'success',
-        title: 'Fluxo criado!',
-        message: 'Fluxo de teste criado com sucesso.',
-      });
-    },
-    onError: (error) => {
-      showNotification({
-        type: 'error',
-        title: 'Erro ao criar fluxo',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
     },
   });
 };
 
 export const useUpdateTestFlow = () => {
   const queryClient = useQueryClient();
-  const { showNotification } = useNotification();
 
   return useMutation({
     mutationFn: ({ id, flow }: { id: string; flow: Partial<TestFlow> }) =>
@@ -58,66 +43,41 @@ export const useUpdateTestFlow = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['testFlows'] });
       queryClient.invalidateQueries({ queryKey: ['testFlow', variables.id] });
-      showNotification({
-        type: 'success',
-        title: 'Fluxo atualizado!',
-        message: 'Fluxo de teste atualizado com sucesso.',
-      });
     },
-    onError: (error) => {
-      showNotification({
-        type: 'error',
-        title: 'Erro ao atualizar fluxo',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
+  });
+};
+
+export const useUpdateTestFlowSteps = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, steps }: { id: string; steps: TestStep[] }) =>
+      apiService.updateTestFlow(id, { steps }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['testFlows'] });
+      queryClient.invalidateQueries({ queryKey: ['testFlow', variables.id] });
     },
   });
 };
 
 export const useDeleteTestFlow = () => {
   const queryClient = useQueryClient();
-  const { showNotification } = useNotification();
 
   return useMutation({
     mutationFn: (id: string) => apiService.deleteTestFlow(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testFlows'] });
-      showNotification({
-        type: 'success',
-        title: 'Fluxo excluído!',
-        message: 'Fluxo de teste excluído com sucesso.',
-      });
-    },
-    onError: (error) => {
-      showNotification({
-        type: 'error',
-        title: 'Erro ao excluir fluxo',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
     },
   });
 };
 
 export const useExecuteTestFlow = () => {
   const queryClient = useQueryClient();
-  const { showNotification } = useNotification();
 
   return useMutation({
     mutationFn: (id: string) => apiService.executeTestFlow(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['testExecutions'] });
-      showNotification({
-        type: 'success',
-        title: 'Execução iniciada!',
-        message: 'Execução do fluxo de teste iniciada com sucesso.',
-      });
-    },
-    onError: (error) => {
-      showNotification({
-        type: 'error',
-        title: 'Erro ao executar fluxo',
-        message: error instanceof Error ? error.message : 'Erro desconhecido',
-      });
     },
   });
 };
@@ -135,9 +95,9 @@ export const useTestExecution = (id: string) => {
     queryKey: ['testExecution', id],
     queryFn: () => apiService.getTestExecution(id),
     enabled: !!id,
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
       // Só continua atualizando se estiver em execução
-      const execution = data?.data;
+      const execution = query.state.data?.data;
       return execution?.status === 'running' ? 2000 : false;
     },
   });

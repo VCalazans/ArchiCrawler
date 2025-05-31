@@ -28,25 +28,25 @@ export class PlaywrightExecutorService {
     const startTime = Date.now();
     
     try {
-      this.logger.log(`🎬 Executando passo real: ${step.name} (${step.type})`);
+      this.logger.log(`🎬 Executando passo real: ${step.name} (${step.type}) com timeout: ${step.timeout || 'padrão'}ms`);
       
       let result;
       
       switch (step.type) {
         case 'navigate':
-          result = await this.executeNavigate(step.config);
+          result = await this.executeNavigate(step.config, step.timeout);
           break;
           
         case 'click':
-          result = await this.executeClick(step.config);
+          result = await this.executeClick(step.config, step.timeout);
           break;
           
         case 'fill':
-          result = await this.executeFill(step.config);
+          result = await this.executeFill(step.config, step.timeout);
           break;
           
         case 'screenshot':
-          result = await this.executeScreenshot(step.config);
+          result = await this.executeScreenshot(step.config, step.timeout);
           break;
           
         case 'wait':
@@ -54,11 +54,11 @@ export class PlaywrightExecutorService {
           break;
           
         case 'assert':
-          result = await this.executeAssert(step.config);
+          result = await this.executeAssert(step.config, step.timeout);
           break;
           
         case 'extract':
-          result = await this.executeExtract(step.config);
+          result = await this.executeExtract(step.config, step.timeout);
           break;
           
         default:
@@ -89,26 +89,33 @@ export class PlaywrightExecutorService {
   /**
    * Executa navegação para uma URL
    */
-  private async executeNavigate(config: { url: string; waitUntil?: string }): Promise<any> {
+  private async executeNavigate(config: { url: string; waitUntil?: string }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }
 
+    const navigationTimeout = timeout || 30000;
+    this.logger.log(`🌐 Navegando para ${config.url} (timeout: ${navigationTimeout}ms)`);
+
     return await this.mcpManager.callTool('playwright', 'playwright_navigate', {
       url: config.url,
       waitUntil: config.waitUntil || 'domcontentloaded',
-      timeout: 30000
+      timeout: navigationTimeout
     });
   }
 
   /**
    * Executa clique em elemento
    */
-  private async executeClick(config: { selector: string }): Promise<any> {
+  private async executeClick(config: { selector: string }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }
 
+    this.logger.log(`👆 Clicando em ${config.selector} ${timeout ? `(timeout: ${timeout}ms)` : ''}`);
+
+    // Note: O MCP playwright_click não aceita timeout diretamente
+    // O timeout seria tratado pelo próprio Playwright internamente
     return await this.mcpManager.callTool('playwright', 'playwright_click', {
       selector: config.selector
     });
@@ -117,10 +124,12 @@ export class PlaywrightExecutorService {
   /**
    * Executa preenchimento de campo
    */
-  private async executeFill(config: { selector: string; value: string }): Promise<any> {
+  private async executeFill(config: { selector: string; value: string }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }
+
+    this.logger.log(`✏️ Preenchendo ${config.selector} com "${config.value}" ${timeout ? `(timeout: ${timeout}ms)` : ''}`);
 
     return await this.mcpManager.callTool('playwright', 'playwright_fill', {
       selector: config.selector,
@@ -131,16 +140,42 @@ export class PlaywrightExecutorService {
   /**
    * Executa captura de screenshot
    */
-  private async executeScreenshot(config: { name: string; fullPage?: boolean }): Promise<any> {
+  private async executeScreenshot(config: { name: string; fullPage?: boolean; savePath?: string }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }
 
-    return await this.mcpManager.callTool('playwright', 'playwright_screenshot', {
+    this.logger.log(`📸 Capturando screenshot "${config.name}" ${timeout ? `(timeout: ${timeout}ms)` : ''}`);
+
+    // Usar parâmetros básicos do MCP Playwright
+    const result = await this.mcpManager.callTool('playwright', 'playwright_screenshot', {
       name: config.name,
       fullPage: config.fullPage || false,
-      storeBase64: true
+      savePng: true,
+      storeBase64: false
     });
+
+    this.logger.log(`📸 Screenshot - Resultado COMPLETO:`, JSON.stringify(result, null, 2));
+    this.logger.log(`📸 Screenshot - Tipo do resultado: ${typeof result}`);
+    this.logger.log(`📸 Screenshot - Keys do resultado:`, Object.keys(result || {}));
+    
+    // Verificar se há informação sobre onde foi salvo
+    if (result && typeof result === 'object') {
+      if (result.path) {
+        this.logger.log(`📁 Arquivo possivelmente salvo em: ${result.path}`);
+      }
+      if (result.filePath) {
+        this.logger.log(`📁 Arquivo possivelmente salvo em: ${result.filePath}`);
+      }
+      if (result.location) {
+        this.logger.log(`📁 Arquivo possivelmente salvo em: ${result.location}`);
+      }
+      if (result.saved) {
+        this.logger.log(`💾 Status de salvamento: ${result.saved}`);
+      }
+    }
+    
+    return result;
   }
 
   /**
@@ -159,7 +194,7 @@ export class PlaywrightExecutorService {
     type: 'text' | 'element' | 'url';
     selector?: string;
     expected: string;
-  }): Promise<any> {
+  }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }
@@ -218,7 +253,7 @@ export class PlaywrightExecutorService {
     selector: string;
     attribute?: string;
     property?: 'text' | 'html' | 'value';
-  }): Promise<any> {
+  }, timeout?: number): Promise<any> {
     if (!this.mcpManager.isServerRunning('playwright')) {
       throw new Error('Servidor Playwright MCP não está rodando');
     }

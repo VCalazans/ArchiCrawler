@@ -241,7 +241,7 @@ class ApiService {
 
   async updateTestFlow(id: string, flow: Partial<TestFlow>): Promise<ApiResponse<TestFlow>> {
     // TODO: Implementar endpoint no backend
-    const response = await this.api.put(`/test-flows/${id}`, flow);
+    const response = await this.api.patch(`/test-flows/${id}`, flow);
     return response.data;
   }
 

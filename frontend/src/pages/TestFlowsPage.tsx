@@ -36,6 +36,7 @@ import { useTestFlows, useCreateTestFlow, useUpdateTestFlow, useDeleteTestFlow, 
 import AutomatedTestSuite from '../components/TestBuilder/AutomatedTestSuite';
 import VisualRegressionTester from '../components/TestBuilder/VisualRegressionTester';
 import PerformanceMonitor from '../components/TestBuilder/PerformanceMonitor';
+import TestFlowDetailDialog from '../components/TestFlows/SimpleTestFlowDialog';
 import { TestFlowStatus, TestFlow } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -65,6 +66,8 @@ const TestFlowsPage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedFlow, setSelectedFlow] = useState<TestFlow | null>(null);
   const [editingFlow, setEditingFlow] = useState<TestFlow | null>(null);
   const [newFlow, setNewFlow] = useState<{
     name: string;
@@ -104,6 +107,11 @@ const TestFlowsPage: React.FC = () => {
   const handleEditFlow = (flow: TestFlow) => {
     setEditingFlow(flow);
     setEditDialogOpen(true);
+  };
+
+  const handleViewFlow = (flow: TestFlow) => {
+    setSelectedFlow(flow);
+    setDetailDialogOpen(true);
   };
 
   const handleUpdateFlow = () => {
@@ -263,9 +271,18 @@ const TestFlowsPage: React.FC = () => {
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                           <IconButton
                             size="small"
+                            color="info"
+                            onClick={() => handleViewFlow(flow)}
+                            title="Ver Detalhes"
+                          >
+                            <ViewIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
                             color="primary"
                             onClick={() => handleExecuteFlow(flow.id)}
                             disabled={executeFlowMutation.isPending || flow.status !== TestFlowStatus.ACTIVE}
+                            title="Executar"
                           >
                             <PlayIcon />
                           </IconButton>
@@ -273,6 +290,7 @@ const TestFlowsPage: React.FC = () => {
                             size="small"
                             color="default"
                             onClick={() => handleEditFlow(flow)}
+                            title="Editar"
                           >
                             <EditIcon />
                           </IconButton>
@@ -281,6 +299,7 @@ const TestFlowsPage: React.FC = () => {
                             color="error"
                             onClick={() => handleDeleteFlow(flow.id)}
                             disabled={deleteFlowMutation.isPending}
+                            title="Excluir"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -390,6 +409,14 @@ const TestFlowsPage: React.FC = () => {
           <Button onClick={handleUpdateFlow} variant="contained">Atualizar</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog de Detalhes */}
+      <TestFlowDetailDialog
+        open={detailDialogOpen}
+        onClose={() => setDetailDialogOpen(false)}
+        flow={selectedFlow}
+        onExecute={handleExecuteFlow}
+      />
     </Container>
   );
 };
