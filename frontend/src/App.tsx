@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/LoginPage';
@@ -10,6 +11,16 @@ import TestFlowsPage from './pages/TestFlowsPage';
 import ScrapingPage from './pages/ScrapingPage';
 import MCPPage from './pages/MCPPage';
 import SettingsPage from './pages/SettingsPage';
+
+// Criar instância do QueryClient
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      retry: 1,
+    },
+  },
+});
 
 // Tema dark moderno inspirado no EvoDI
 const theme = createTheme({
@@ -284,77 +295,79 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Rotas Públicas */}
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              }
-            />
+        <QueryClientProvider client={queryClient}>
+          <Router>
+            <Routes>
+              {/* Rotas Públicas */}
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
 
-            {/* Rotas Protegidas */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <DashboardPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/test-flows"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <TestFlowsPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/scraping"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <ScrapingPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/mcp"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <MCPPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <SettingsPage />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </Router>
+              {/* Rotas Protegidas */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <DashboardPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/test-flows"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <TestFlowsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/scraping"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <ScrapingPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/mcp"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <MCPPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <SettingsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Router>
+        </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>
   );

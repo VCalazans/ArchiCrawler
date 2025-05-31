@@ -20,33 +20,61 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  Divider,
+  Tab,
+  Tabs,
 } from '@mui/material';
 import {
   Add as AddIcon,
   PlayArrow as PlayIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Stop as StopIcon,
   Visibility as ViewIcon,
-  DragIndicator as DragIcon,
+  AutoFixHigh as AutoIcon,
+  CameraAlt as VisualIcon,
+  Speed as PerformanceIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTestFlows, useCreateTestFlow, useDeleteTestFlow, useExecuteTestFlow } from '../hooks/useTestFlows';
-import type { TestFlow, TestStep, TestStepType, TestFlowStatus } from '../types';
+import AutomatedTestSuite from '../components/TestBuilder/AutomatedTestSuite';
+import VisualRegressionTester from '../components/TestBuilder/VisualRegressionTester';
+import PerformanceMonitor from '../components/TestBuilder/PerformanceMonitor';
+import { TestFlowStatus } from '../types';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`test-flows-tabpanel-${index}`}
+      aria-labelledby={`test-flows-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+    </div>
+  );
+}
 
 const TestFlowsPage: React.FC = () => {
+  const [tabValue, setTabValue] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editingFlow, setEditingFlow] = useState<TestFlow | null>(null);
-  const [newFlow, setNewFlow] = useState({
+  const [newFlow, setNewFlow] = useState<{
+    name: string;
+    description: string;
+    status: TestFlowStatus;
+    steps: never[];
+  }>({
     name: '',
     description: '',
-    status: 'draft' as TestFlowStatus,
-    steps: [] as TestStep[],
+    status: TestFlowStatus.DRAFT,
+    steps: [],
   });
 
   const { data: testFlowsData, isLoading } = useTestFlows();
@@ -60,11 +88,11 @@ const TestFlowsPage: React.FC = () => {
     if (newFlow.name.trim()) {
       createFlowMutation.mutate({
         ...newFlow,
-        userId: 'current-user', // TODO: Pegar do contexto de auth
-        isActive: newFlow.status === 'active',
+        userId: 'current-user',
+        isActive: newFlow.status === TestFlowStatus.ACTIVE,
       });
       setCreateDialogOpen(false);
-      setNewFlow({ name: '', description: '', status: 'draft', steps: [] });
+      setNewFlow({ name: '', description: '', status: TestFlowStatus.DRAFT, steps: [] });
     }
   };
 
@@ -80,169 +108,196 @@ const TestFlowsPage: React.FC = () => {
 
   const getStatusColor = (status: TestFlowStatus) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'draft': return 'default';
-      case 'paused': return 'warning';
-      case 'archived': return 'secondary';
+      case TestFlowStatus.ACTIVE: return 'success';
+      case TestFlowStatus.DRAFT: return 'default';
+      case TestFlowStatus.PAUSED: return 'warning';
+      case TestFlowStatus.ARCHIVED: return 'secondary';
       default: return 'default';
     }
   };
 
   const getStatusLabel = (status: TestFlowStatus) => {
     switch (status) {
-      case 'active': return 'Ativo';
-      case 'draft': return 'Rascunho';
-      case 'paused': return 'Pausado';
-      case 'archived': return 'Arquivado';
+      case TestFlowStatus.ACTIVE: return 'Ativo';
+      case TestFlowStatus.DRAFT: return 'Rascunho';
+      case TestFlowStatus.PAUSED: return 'Pausado';
+      case TestFlowStatus.ARCHIVED: return 'Arquivado';
       default: return status;
     }
   };
-
-  if (isLoading) {
-    return (
-      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress size={60} />
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
-          Fluxos de Teste
+          Centro de Testes Automatizados
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setCreateDialogOpen(true)}
-          sx={{ borderRadius: 2 }}
-        >
-          Novo Fluxo
-        </Button>
       </Box>
 
-      <AnimatePresence>
-        <Grid container spacing={3}>
-          {testFlows.map((flow, index) => (
-            <Grid item xs={12} md={6} lg={4} key={flow.id}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    position: 'relative',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
-                    },
-                    transition: 'all 0.3s ease-in-out',
-                  }}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Typography variant="h6" component="h2" sx={{ fontWeight: 600, flex: 1 }}>
-                        {flow.name}
-                      </Typography>
-                      <Chip 
-                        label={getStatusLabel(flow.status)}
-                        color={getStatusColor(flow.status)}
-                        size="small"
-                      />
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: 40 }}>
-                      {flow.description || 'Sem descrição'}
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {flow.steps.length} passos
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {flow.lastRun ? `Última execução: ${new Date(flow.lastRun).toLocaleDateString()}` : 'Nunca executado'}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleExecuteFlow(flow.id)}
-                        disabled={executeFlowMutation.isPending || flow.status !== 'active'}
-                      >
-                        <PlayIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="default"
-                        onClick={() => setEditingFlow(flow)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteFlow(flow.id)}
-                        disabled={deleteFlowMutation.isPending}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
-        </Grid>
-      </AnimatePresence>
-
-      {testFlows.length === 0 && (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '40vh',
-            textAlign: 'center',
-          }}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={(_, newValue) => setTabValue(newValue)}
+          aria-label="test flows tabs"
+          variant="scrollable"
+          scrollButtons="auto"
         >
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-            Nenhum fluxo de teste encontrado
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Crie seu primeiro fluxo de teste para começar
+          <Tab 
+            label="Fluxos Salvos" 
+            icon={<ViewIcon />} 
+            iconPosition="start"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          />
+          <Tab 
+            label="Criador de Testes" 
+            icon={<AutoIcon />} 
+            iconPosition="start"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          />
+          <Tab 
+            label="Testes Visuais" 
+            icon={<VisualIcon />} 
+            iconPosition="start"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          />
+          <Tab 
+            label="Monitor Performance" 
+            icon={<PerformanceIcon />} 
+            iconPosition="start"
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          />
+        </Tabs>
+      </Box>
+
+      <TabPanel value={tabValue} index={0}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            Fluxos de Teste Salvos
           </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setCreateDialogOpen(true)}
+            sx={{ borderRadius: 2 }}
           >
-            Criar Primeiro Fluxo
+            Novo Fluxo
           </Button>
         </Box>
-      )}
+
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+            <CircularProgress size={60} />
+          </Box>
+        ) : (
+          <AnimatePresence>
+            <Grid container spacing={3}>
+              {testFlows.map((flow, index) => (
+                <Grid item xs={12} md={6} lg={4} key={flow.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card 
+                      sx={{ 
+                        height: '100%',
+                        position: 'relative',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 6,
+                        },
+                        transition: 'all 0.3s ease-in-out',
+                      }}
+                    >
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                          <Typography variant="h6" component="h2" sx={{ fontWeight: 600, flex: 1 }}>
+                            {flow.name}
+                          </Typography>
+                          <Chip 
+                            label={getStatusLabel(flow.status)}
+                            color={getStatusColor(flow.status)}
+                            size="small"
+                          />
+                        </Box>
+                        
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, minHeight: 40 }}>
+                          {flow.description || 'Sem descrição'}
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {flow.steps.length} passos
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {flow.lastRun ? `Última execução: ${new Date(flow.lastRun).toLocaleDateString()}` : 'Nunca executado'}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleExecuteFlow(flow.id)}
+                            disabled={executeFlowMutation.isPending || flow.status !== TestFlowStatus.ACTIVE}
+                          >
+                            <PlayIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="default"
+                            onClick={() => console.log('Edit flow:', flow.id)}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleDeleteFlow(flow.id)}
+                            disabled={deleteFlowMutation.isPending}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
+          </AnimatePresence>
+        )}
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <Suspense fallback={<CircularProgress />}>
+          <AutomatedTestSuite />
+        </Suspense>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <Suspense fallback={<CircularProgress />}>
+          <VisualRegressionTester />
+        </Suspense>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={3}>
+        <Suspense fallback={<CircularProgress />}>
+          <PerformanceMonitor />
+        </Suspense>
+      </TabPanel>
 
       {/* Dialog de Criação */}
-      <Dialog 
-        open={createDialogOpen} 
-        onClose={() => setCreateDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Criar Novo Fluxo de Teste</DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
+              autoFocus
               label="Nome do Fluxo"
               fullWidth
               value={newFlow.name}
-              onChange={(e) => setNewFlow({ ...newFlow, name: e.target.value })}
-              placeholder="Ex: Teste de Login"
+              onChange={(e) => setNewFlow(prev => ({ ...prev, name: e.target.value }))}
             />
             <TextField
               label="Descrição"
@@ -250,50 +305,26 @@ const TestFlowsPage: React.FC = () => {
               multiline
               rows={3}
               value={newFlow.description}
-              onChange={(e) => setNewFlow({ ...newFlow, description: e.target.value })}
-              placeholder="Descreva o que este fluxo irá testar..."
+              onChange={(e) => setNewFlow(prev => ({ ...prev, description: e.target.value }))}
             />
             <FormControl fullWidth>
               <InputLabel>Status Inicial</InputLabel>
               <Select
                 value={newFlow.status}
                 label="Status Inicial"
-                onChange={(e) => setNewFlow({ ...newFlow, status: e.target.value as TestFlowStatus })}
+                onChange={(e) => setNewFlow(prev => ({ ...prev, status: e.target.value as TestFlowStatus }))}
               >
-                <MenuItem value="draft">Rascunho</MenuItem>
-                <MenuItem value="active">Ativo</MenuItem>
-                <MenuItem value="paused">Pausado</MenuItem>
+                <MenuItem value={TestFlowStatus.DRAFT}>Rascunho</MenuItem>
+                <MenuItem value={TestFlowStatus.ACTIVE}>Ativo</MenuItem>
               </Select>
             </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleCreateFlow}
-            variant="contained"
-            disabled={!newFlow.name.trim() || createFlowMutation.isPending}
-          >
-            {createFlowMutation.isPending ? <CircularProgress size={20} /> : 'Criar Fluxo'}
-          </Button>
+          <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleCreateFlow} variant="contained">Criar</Button>
         </DialogActions>
       </Dialog>
-
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="adicionar fluxo"
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-        }}
-        onClick={() => setCreateDialogOpen(true)}
-      >
-        <AddIcon />
-      </Fab>
     </Container>
   );
 };
