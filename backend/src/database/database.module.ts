@@ -6,6 +6,9 @@ import { ApiKey } from '../auth/entities/api-key.entity';
 import { MCPClient } from '../auth/entities/mcp-client.entity';
 import { TestFlow } from '../entities/test-flow.entity';
 import { TestExecution } from '../entities/test-execution.entity';
+import { UserApiKey } from '../llm-tests/entities/user-api-key.entity';
+import { GeneratedTest } from '../llm-tests/entities/generated-test.entity';
+import { LLMProviderConfig } from '../llm-tests/entities/llm-provider-config.entity';
 
 @Module({
   imports: [
@@ -18,7 +21,16 @@ import { TestExecution } from '../entities/test-execution.entity';
         username: configService.get('DB_USERNAME') || 'archicode',
         password: configService.get('DB_PASSWORD') || '#Archicode2025',
         database: configService.get('DB_DATABASE') || 'archicrawler',
-        entities: [User, ApiKey, MCPClient, TestFlow, TestExecution],
+        entities: [
+          User, 
+          ApiKey, 
+          MCPClient, 
+          TestFlow, 
+          TestExecution,
+          UserApiKey,
+          GeneratedTest,
+          LLMProviderConfig
+        ],
         synchronize: false, // Desabilitado - usar migrações manuais
         logging: configService.get('NODE_ENV') === 'development',
         ssl: false, // Desabilitar SSL

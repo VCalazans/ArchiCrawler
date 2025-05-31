@@ -21,7 +21,8 @@ async function runMigrations() {
     const migrationFiles = [
       '001-create-auth-tables.sql',
       '002-insert-initial-data.sql',
-      '003-create-test-flows-tables.sql'
+      '003-create-test-flows-tables.sql',
+      '004-create-llm-tests-tables.sql'
     ];
 
     for (const fileName of migrationFiles) {
@@ -55,7 +56,10 @@ async function runMigrations() {
         hastriggers
       FROM pg_tables 
       WHERE schemaname = 'public' 
-      AND tablename IN ('users', 'api_keys', 'mcp_clients', 'test_flows', 'test_executions')
+      AND tablename IN (
+        'users', 'api_keys', 'mcp_clients', 'test_flows', 'test_executions',
+        'user_api_keys', 'generated_tests', 'llm_provider_configs'
+      )
       ORDER BY tablename;
     `;
     
@@ -66,49 +70,93 @@ async function runMigrations() {
     } else {
       console.log('📋 Tabelas criadas:');
       tablesResult.rows.forEach(row => {
-        console.log(`   ✅ ${row.tablename} (índices: ${row.hasindexes ? 'sim' : 'não'}, triggers: ${row.hastriggers ? 'sim' : 'não'})`);
+        const isLLMTable = ['user_api_keys', 'generated_tests', 'llm_provider_configs'].includes(row.tablename);
+        const prefix = isLLMTable ? '🤖' : '📊';
+        console.log(`   ${prefix} ${row.tablename} (índices: ${row.hasindexes ? 'sim' : 'não'}, triggers: ${row.hastriggers ? 'sim' : 'não'})`);
       });
     }
 
     // Verificar dados inseridos
     console.log('\n📈 Verificando dados inseridos...');
     
-    const dataQuery = `
-      SELECT 
-        'users' as tabela,
-        COUNT(*) as total,
-        COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
-      FROM users
-      UNION ALL
-      SELECT 
-        'api_keys' as tabela,
-        COUNT(*) as total,
-        COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
-      FROM api_keys
-      UNION ALL
-      SELECT 
-        'mcp_clients' as tabela,
-        COUNT(*) as total,
-        COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
-      FROM mcp_clients
-      UNION ALL
-      SELECT 
-        'test_flows' as tabela,
-        COUNT(*) as total,
-        COUNT(CASE WHEN is_active = true THEN 1 END) as ativos
-      FROM test_flows
-      UNION ALL
-      SELECT 
-        'test_executions' as tabela,
-        COUNT(*) as total,
-        COUNT(CASE WHEN status = 'success' THEN 1 END) as sucessos
-      FROM test_executions;
-    `;
+    // Verificar tabelas existentes antes de fazer query
+    const existingTables = tablesResult.rows.map(row => row.tablename);
     
-    const dataResult = await client.query(dataQuery);
-    dataResult.rows.forEach(row => {
-      console.log(`   📊 ${row.tabela}: ${row.total} total, ${row.ativos || row.sucessos} ativos/sucessos`);
-    });
+    let dataQueries = [];
+    
+    if (existingTables.includes('users')) {
+      dataQueries.push(`
+        SELECT 
+          'users' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
+        FROM users
+      `);
+    }
+    
+    if (existingTables.includes('api_keys')) {
+      dataQueries.push(`
+        SELECT 
+          'api_keys' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
+        FROM api_keys
+      `);
+    }
+    
+    if (existingTables.includes('test_flows')) {
+      dataQueries.push(`
+        SELECT 
+          'test_flows' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN is_active = true THEN 1 END) as ativos
+        FROM test_flows
+      `);
+    }
+
+    // Verificar tabelas do módulo LLM Tests
+    if (existingTables.includes('user_api_keys')) {
+      dataQueries.push(`
+        SELECT 
+          'user_api_keys' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
+        FROM user_api_keys
+      `);
+    }
+
+    if (existingTables.includes('generated_tests')) {
+      dataQueries.push(`
+        SELECT 
+          'generated_tests' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN status = 'validated' THEN 1 END) as validados
+        FROM generated_tests
+      `);
+    }
+
+    if (existingTables.includes('llm_provider_configs')) {
+      dataQueries.push(`
+        SELECT 
+          'llm_provider_configs' as tabela,
+          COUNT(*) as total,
+          COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
+        FROM llm_provider_configs
+      `);
+    }
+
+    if (dataQueries.length > 0) {
+      const dataQuery = dataQueries.join(' UNION ALL ');
+      const dataResult = await client.query(dataQuery);
+      
+      dataResult.rows.forEach(row => {
+        const isLLMTable = ['user_api_keys', 'generated_tests', 'llm_provider_configs'].includes(row.tabela);
+        const prefix = isLLMTable ? '🤖' : '📊';
+        const statusLabel = row.validados !== undefined ? 'validados' : (row.ativos !== undefined ? 'ativos' : 'sucessos');
+        const statusCount = row.validados || row.ativos || row.sucessos || 0;
+        console.log(`   ${prefix} ${row.tabela}: ${row.total} total, ${statusCount} ${statusLabel}`);
+      });
+    }
 
     console.log('\n🎉 Migrações concluídas com sucesso!');
     console.log('\n📝 Credenciais padrão criadas:');
@@ -118,8 +166,13 @@ async function runMigrations() {
     console.log('   🔑 Test API Key: ak_test_user_key_2024_archicrawler_limited');
     console.log('   🤖 Default MCP Client: mcp_archicrawler_default_client_2024');
     console.log('   🤖 Dev MCP Client: mcp_dev_client_archicrawler_2024');
-    console.log('\n🧪 Test Flows:');
-    console.log('   🔄 Exemplo de fluxo de teste criado para demonstração');
+    
+    if (existingTables.includes('llm_provider_configs')) {
+      console.log('\n🧠 Módulo LLM Tests:');
+      console.log('   🤖 Provedores LLM configurados: OpenAI, Anthropic, Gemini');
+      console.log('   🔐 Sistema de criptografia AES-256 para API keys');
+      console.log('   ⚡ Pronto para gerar testes automatizados!');
+    }
 
   } catch (error) {
     console.error('❌ Erro durante as migrações:', error.message);
