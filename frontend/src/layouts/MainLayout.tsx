@@ -32,6 +32,7 @@ import {
   Notifications,
   Search,
 } from '@mui/icons-material';
+import { Brain } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const drawerWidth = 280;
@@ -67,6 +68,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', badge: null },
     { text: 'Fluxos de Teste', icon: <PlayArrow />, path: '/test-flows', badge: 3 },
+    { text: 'Testes com IA', icon: <Brain size={24} />, path: '/llm-tests', badge: 'Beta' },
     { text: 'Web Scraping', icon: <Web />, path: '/scraping', badge: null },
     { text: 'MCP', icon: <Build />, path: '/mcp', badge: 'NEW' },
     { text: 'Configurações', icon: <Settings />, path: '/settings', badge: null },

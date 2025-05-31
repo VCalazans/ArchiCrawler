@@ -11,6 +11,7 @@ import TestFlowsPage from './pages/TestFlowsPage';
 import ScrapingPage from './pages/ScrapingPage';
 import MCPPage from './pages/MCPPage';
 import SettingsPage from './pages/SettingsPage';
+import LLMTestsPage from './pages/LLMTestsPage';
 
 // Criar instância do QueryClient
 const queryClient = new QueryClient({
@@ -359,6 +360,17 @@ const App: React.FC = () => {
                   <ProtectedRoute>
                     <MainLayout>
                       <SettingsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/llm-tests"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <LLMTestsPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }
