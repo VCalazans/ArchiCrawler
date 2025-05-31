@@ -193,10 +193,17 @@ class LLMTestsApiService {
 
   async executeTest(id: string): Promise<ApiResponse<{
     executionId: string;
-    status: 'started' | 'running';
-    estimatedDuration: string;
+    testId: string;
+    status: string;
+    success: boolean;
+    duration: number;
+    totalSteps: number;
+    completedSteps: number;
+    failedSteps: number;
+    startedAt: string;
+    completedAt: string;
   }>> {
-    const response = await this.api.post(`/llm-tests/execute/${id}`);
+    const response = await this.api.post(`/llm-tests/generate/${id}/execute`);
     return response.data;
   }
 

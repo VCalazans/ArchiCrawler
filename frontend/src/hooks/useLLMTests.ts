@@ -210,6 +210,27 @@ export const useUsageMetrics = (provider?: LLMProvider, period?: 'daily' | 'week
 // Hook para execuções de testes
 // =====================================================
 
+export const useExecuteTest = () => {
+  const queryClient = useQueryClient();
+
+  const executeTestMutation = useMutation({
+    mutationFn: (testId: string) => llmTestsApi.executeTest(testId),
+    onSuccess: (data, testId) => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries({ queryKey: ['llm-tests', 'tests'] });
+      queryClient.invalidateQueries({ queryKey: ['llm-tests', 'test', testId] });
+      queryClient.invalidateQueries({ queryKey: ['llm-tests', 'executions'] });
+    },
+  });
+
+  return {
+    executeTest: executeTestMutation.mutate,
+    isExecuting: executeTestMutation.isPending,
+    executionData: executeTestMutation.data?.data,
+    error: executeTestMutation.error,
+  };
+};
+
 export const useTestExecutions = (testId?: string) => {
   const executionsQuery = useQuery({
     queryKey: ['llm-tests', 'executions', testId],

@@ -55,18 +55,21 @@ export class LLMTestGeneratorService {
 
       // 6. Salvar no banco
       const generatedTest = this.generatedTestRepository.create({
-        userId: request.userId,
         name: this.generateTestName(request),
         description: request.testDescription,
         targetUrl: request.targetUrl,
         testType: request.testType,
         llmProvider: request.llmProvider,
         model: request.model || 'default',
-        originalPrompt: prompt,
+        originalPrompt: {
+          system: prompt.system,
+          user: prompt.user,
+          context: request.additionalContext
+        },
         generatedCode: generatedResult.testCode,
         mcpCommands: generatedResult.mcpCommands,
-        validationResult,
-        status: validationResult.isValid ? 'validated' : 'draft',
+        validationResult: null,
+        status: 'draft',
         metadata: {
           tokensUsed: generatedResult.metadata.tokensUsed,
           confidence: generatedResult.metadata.confidence,
@@ -127,7 +130,8 @@ export class LLMTestGeneratorService {
     try {
       const queryBuilder = this.generatedTestRepository
         .createQueryBuilder('test')
-        .where('test.userId = :userId', { userId })
+        // Temporariamente removido filtro por userId até migração do banco
+        // .where('test.userId = :userId', { userId })
         .orderBy('test.createdAt', 'DESC');
 
       if (filters?.testType) {
@@ -156,7 +160,8 @@ export class LLMTestGeneratorService {
   async getTestById(id: string, userId: string): Promise<GeneratedTest> {
     try {
       const test = await this.generatedTestRepository.findOne({
-        where: { id, userId }
+        // Temporariamente removido filtro por userId
+        where: { id }
       });
 
       if (!test) {
@@ -190,8 +195,8 @@ export class LLMTestGeneratorService {
   async deleteTest(id: string, userId: string): Promise<void> {
     try {
       const result = await this.generatedTestRepository.delete({
-        id,
-        userId
+        id
+        // Temporariamente sem userId
       });
 
       if (result.affected === 0) {
@@ -213,7 +218,7 @@ export class LLMTestGeneratorService {
   }> {
     try {
       const tests = await this.generatedTestRepository.find({
-        where: { userId }
+        // Temporariamente sem filtro userId
       });
 
       const stats = {
@@ -252,7 +257,7 @@ export class LLMTestGeneratorService {
         testType: existingTest.testType as any,
         llmProvider: existingTest.llmProvider,
         model: existingTest.model,
-        userId: existingTest.userId,
+        userId: userId, // Manter userId na request mesmo que não seja salvo
         additionalContext: existingTest.originalPrompt?.context
       };
 

@@ -1,6 +1,5 @@
 export declare class GeneratedTest {
     id: string;
-    userId: string;
     name: string;
     description: string;
     targetUrl: string;
@@ -13,6 +12,9 @@ export declare class GeneratedTest {
     validationResult: any;
     status: 'draft' | 'validated' | 'active' | 'failed' | 'archived';
     executionHistory: any;
+    lastExecutionAt?: Date;
+    lastSuccessfulExecutionAt?: Date;
+    executionCount: number;
     metadata: {
         tokensUsed?: number;
         confidence?: number;

@@ -9,6 +9,7 @@ import { TestExecution } from '../entities/test-execution.entity';
 import { UserApiKey } from '../llm-tests/entities/user-api-key.entity';
 import { GeneratedTest } from '../llm-tests/entities/generated-test.entity';
 import { LLMProviderConfig } from '../llm-tests/entities/llm-provider-config.entity';
+import { TestExecutionResult } from '../llm-tests/entities/test-execution-result.entity';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { LLMProviderConfig } from '../llm-tests/entities/llm-provider-config.ent
           TestExecution,
           UserApiKey,
           GeneratedTest,
-          LLMProviderConfig
+          LLMProviderConfig,
+          TestExecutionResult
         ],
         synchronize: false, // Desabilitado - usar migrações manuais
         logging: configService.get('NODE_ENV') === 'development',

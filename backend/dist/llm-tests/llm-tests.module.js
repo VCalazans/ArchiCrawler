@@ -13,6 +13,7 @@ const config_1 = require("@nestjs/config");
 const user_api_key_entity_1 = require("./entities/user-api-key.entity");
 const generated_test_entity_1 = require("./entities/generated-test.entity");
 const llm_provider_config_entity_1 = require("./entities/llm-provider-config.entity");
+const test_execution_entity_1 = require("../entities/test-execution.entity");
 const openai_provider_1 = require("./providers/openai.provider");
 const anthropic_provider_1 = require("./providers/anthropic.provider");
 const gemini_provider_1 = require("./providers/gemini.provider");
@@ -21,8 +22,11 @@ const api_key_manager_service_1 = require("./services/api-key-manager.service");
 const test_prompt_builder_service_1 = require("./services/test-prompt-builder.service");
 const test_validator_service_1 = require("./services/test-validator.service");
 const llm_test_generator_service_1 = require("./services/llm-test-generator.service");
+const llm_test_execution_service_1 = require("./services/llm-test-execution.service");
 const api_keys_controller_1 = require("./controllers/api-keys.controller");
 const test_generation_controller_1 = require("./controllers/test-generation.controller");
+const mcp_module_1 = require("../mcp/mcp.module");
+const playwright_mcp_service_1 = require("../mcp/services/playwright-mcp.service");
 let LLMTestsModule = class LLMTestsModule {
 };
 exports.LLMTestsModule = LLMTestsModule;
@@ -32,9 +36,11 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([
                 user_api_key_entity_1.UserApiKey,
                 generated_test_entity_1.GeneratedTest,
-                llm_provider_config_entity_1.LLMProviderConfig
+                llm_provider_config_entity_1.LLMProviderConfig,
+                test_execution_entity_1.TestExecution
             ]),
             config_1.ConfigModule,
+            mcp_module_1.MCPModule,
         ],
         controllers: [
             api_keys_controller_1.ApiKeysController,
@@ -49,6 +55,8 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
             test_prompt_builder_service_1.TestPromptBuilderService,
             test_validator_service_1.TestValidatorService,
             llm_test_generator_service_1.LLMTestGeneratorService,
+            llm_test_execution_service_1.LLMTestExecutionService,
+            playwright_mcp_service_1.PlaywrightMCPService,
         ],
         exports: [
             llm_provider_factory_1.LLMProviderFactory,
@@ -56,9 +64,11 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
             test_prompt_builder_service_1.TestPromptBuilderService,
             test_validator_service_1.TestValidatorService,
             llm_test_generator_service_1.LLMTestGeneratorService,
+            llm_test_execution_service_1.LLMTestExecutionService,
             openai_provider_1.OpenAIProvider,
             anthropic_provider_1.AnthropicProvider,
             gemini_provider_1.GeminiProvider,
+            playwright_mcp_service_1.PlaywrightMCPService,
         ],
     })
 ], LLMTestsModule);

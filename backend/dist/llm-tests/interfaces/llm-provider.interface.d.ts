@@ -13,6 +13,11 @@ export interface GeneratedTestResult {
         provider: string;
         confidence: number;
         estimatedDuration?: string;
+        testName?: string;
+        description?: string;
+        expectedResults?: string[];
+        tags?: string[];
+        readableCode?: string;
     };
 }
 export interface LLMProvider {
@@ -24,11 +29,16 @@ export interface LLMProvider {
     getSupportedModels(): string[];
 }
 export interface MCPCommand {
-    action: 'navigate' | 'click' | 'fill' | 'screenshot' | 'wait' | 'assert' | 'hover' | 'select';
+    action: 'navigate' | 'click' | 'fill' | 'screenshot' | 'wait' | 'assert' | 'hover' | 'select' | 'press_key' | 'get_text' | 'evaluate';
     selector?: string;
     value?: string;
     url?: string;
     timeout?: number;
     name?: string;
     fullPage?: boolean;
+    description?: string;
+    key?: string;
+    script?: string;
+    captureScreenshot?: boolean;
+    waitFor?: string;
 }

@@ -47,18 +47,21 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
             const validationResult = await this.testValidator.validateGeneratedTest(generatedResult);
             this.logger.debug(`Validação concluída - Score: ${validationResult.score}%`);
             const generatedTest = this.generatedTestRepository.create({
-                userId: request.userId,
                 name: this.generateTestName(request),
                 description: request.testDescription,
                 targetUrl: request.targetUrl,
                 testType: request.testType,
                 llmProvider: request.llmProvider,
                 model: request.model || 'default',
-                originalPrompt: prompt,
+                originalPrompt: {
+                    system: prompt.system,
+                    user: prompt.user,
+                    context: request.additionalContext
+                },
                 generatedCode: generatedResult.testCode,
                 mcpCommands: generatedResult.mcpCommands,
-                validationResult,
-                status: validationResult.isValid ? 'validated' : 'draft',
+                validationResult: null,
+                status: 'draft',
                 metadata: {
                     tokensUsed: generatedResult.metadata.tokensUsed,
                     confidence: generatedResult.metadata.confidence,
@@ -104,7 +107,6 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
         try {
             const queryBuilder = this.generatedTestRepository
                 .createQueryBuilder('test')
-                .where('test.userId = :userId', { userId })
                 .orderBy('test.createdAt', 'DESC');
             if (filters?.testType) {
                 queryBuilder.andWhere('test.testType = :testType', { testType: filters.testType });
@@ -128,7 +130,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     async getTestById(id, userId) {
         try {
             const test = await this.generatedTestRepository.findOne({
-                where: { id, userId }
+                where: { id }
             });
             if (!test) {
                 throw new Error('Teste não encontrado');
@@ -158,8 +160,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     async deleteTest(id, userId) {
         try {
             const result = await this.generatedTestRepository.delete({
-                id,
-                userId
+                id
             });
             if (result.affected === 0) {
                 throw new Error('Teste não encontrado');
@@ -173,9 +174,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     }
     async getTestStatistics(userId) {
         try {
-            const tests = await this.generatedTestRepository.find({
-                where: { userId }
-            });
+            const tests = await this.generatedTestRepository.find({});
             const stats = {
                 total: tests.length,
                 byType: {},
@@ -203,7 +202,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
                 testType: existingTest.testType,
                 llmProvider: existingTest.llmProvider,
                 model: existingTest.model,
-                userId: existingTest.userId,
+                userId: userId,
                 additionalContext: existingTest.originalPrompt?.context
             };
             const newTest = await this.generateTest(request);

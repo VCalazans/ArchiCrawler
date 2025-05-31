@@ -18,6 +18,7 @@ const test_execution_entity_1 = require("../entities/test-execution.entity");
 const user_api_key_entity_1 = require("../llm-tests/entities/user-api-key.entity");
 const generated_test_entity_1 = require("../llm-tests/entities/generated-test.entity");
 const llm_provider_config_entity_1 = require("../llm-tests/entities/llm-provider-config.entity");
+const test_execution_result_entity_1 = require("../llm-tests/entities/test-execution-result.entity");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -41,7 +42,8 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                         test_execution_entity_1.TestExecution,
                         user_api_key_entity_1.UserApiKey,
                         generated_test_entity_1.GeneratedTest,
-                        llm_provider_config_entity_1.LLMProviderConfig
+                        llm_provider_config_entity_1.LLMProviderConfig,
+                        test_execution_result_entity_1.TestExecutionResult
                     ],
                     synchronize: false,
                     logging: configService.get('NODE_ENV') === 'development',

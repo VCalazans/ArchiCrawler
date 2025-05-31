@@ -21,10 +21,6 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], GeneratedTest.prototype, "userId", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
 ], GeneratedTest.prototype, "name", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),
@@ -70,6 +66,18 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'json', nullable: true }),
     __metadata("design:type", Object)
 ], GeneratedTest.prototype, "executionHistory", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'last_execution_at', nullable: true }),
+    __metadata("design:type", Date)
+], GeneratedTest.prototype, "lastExecutionAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'last_successful_execution_at', nullable: true }),
+    __metadata("design:type", Date)
+], GeneratedTest.prototype, "lastSuccessfulExecutionAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'execution_count', default: 0 }),
+    __metadata("design:type", Number)
+], GeneratedTest.prototype, "executionCount", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'json', nullable: true }),
     __metadata("design:type", Object)

@@ -5,8 +5,9 @@ export class GeneratedTest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  userId: string;
+  // Removido temporariamente até migração do banco
+  // @Column()
+  // userId: string;
 
   @Column()
   name: string;
@@ -43,6 +44,15 @@ export class GeneratedTest {
 
   @Column({ type: 'json', nullable: true })
   executionHistory: any;
+
+  @Column({ name: 'last_execution_at', nullable: true })
+  lastExecutionAt?: Date;
+
+  @Column({ name: 'last_successful_execution_at', nullable: true })
+  lastSuccessfulExecutionAt?: Date;
+
+  @Column({ name: 'execution_count', default: 0 })
+  executionCount: number;
 
   @Column({ type: 'json', nullable: true })
   metadata: {

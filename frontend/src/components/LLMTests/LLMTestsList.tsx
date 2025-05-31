@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -26,6 +26,7 @@ import {
   MenuItem as MenuItemComponent,
   Alert,
   LinearProgress,
+  useTheme,
 } from '@mui/material';
 import {
   Filter,
@@ -53,7 +54,7 @@ import {
 } from '../../types/llm-tests';
 
 // Hooks
-import { useTests, useTestFilters, useLLMNotifications } from '../../hooks/useLLMTests';
+import { useTests, useTestFilters, useLLMNotifications, useDeleteTest, useRegenerateTest, useExecuteTest } from '../../hooks/useLLMTests';
 
 const LLMTestsList: React.FC = () => {
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
@@ -71,6 +72,9 @@ const LLMTestsList: React.FC = () => {
     limit: rowsPerPage,
   });
   const { addNotification } = useLLMNotifications();
+  const { executeTest, isExecuting } = useExecuteTest();
+
+  const theme = useTheme();
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
@@ -151,6 +155,26 @@ const LLMTestsList: React.FC = () => {
     });
     handleMenuClose();
   };
+
+  const handleExecuteTest = useCallback((id: string) => {
+    executeTest(id, {
+      onSuccess: (data) => {
+        addNotification({
+          type: 'success',
+          title: 'Teste Executado',
+          message: `Teste executado com sucesso! ID da execução: ${data.executionId}`,
+        });
+      },
+      onError: () => {
+        addNotification({
+          type: 'error',
+          title: 'Erro na Execução',
+          message: 'Não foi possível executar o teste.',
+        });
+      },
+    });
+    handleMenuClose();
+  }, [executeTest, addNotification]);
 
   const getStatusColor = (status: TestStatus) => {
     switch (status) {
@@ -428,7 +452,10 @@ const LLMTestsList: React.FC = () => {
           <Edit size={16} className="mr-2" />
           Editar
         </MenuItemComponent>
-        <MenuItemComponent onClick={handleMenuClose}>
+        <MenuItemComponent 
+          onClick={() => selectedTest && handleExecuteTest(selectedTest.id)}
+          disabled={isExecuting}
+        >
           <Play size={16} className="mr-2" />
           Executar
         </MenuItemComponent>
