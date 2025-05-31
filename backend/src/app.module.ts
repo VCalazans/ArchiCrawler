@@ -8,6 +8,7 @@ import { HealthModule } from './health/health.module';
 import { MCPModule } from './mcp/mcp.module';
 import { AuthModule } from './auth/auth.module';
 import { TestFlowsModule } from './test-flows/test-flows.module';
+import { LLMTestsModule } from './llm-tests/llm-tests.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TestFlowsModule } from './test-flows/test-flows.module';
     HealthModule,
     MCPModule,
     TestFlowsModule,
+    LLMTestsModule,
   ],
 })
 export class AppModule {}
