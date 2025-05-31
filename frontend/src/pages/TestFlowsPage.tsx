@@ -32,11 +32,11 @@ import {
   Speed as PerformanceIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTestFlows, useCreateTestFlow, useDeleteTestFlow, useExecuteTestFlow } from '../hooks/useTestFlows';
+import { useTestFlows, useCreateTestFlow, useUpdateTestFlow, useDeleteTestFlow, useExecuteTestFlow } from '../hooks/useTestFlows';
 import AutomatedTestSuite from '../components/TestBuilder/AutomatedTestSuite';
 import VisualRegressionTester from '../components/TestBuilder/VisualRegressionTester';
 import PerformanceMonitor from '../components/TestBuilder/PerformanceMonitor';
-import { TestFlowStatus } from '../types';
+import { TestFlowStatus, TestFlow } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
 interface TabPanelProps {
@@ -64,6 +64,8 @@ function TabPanel(props: TabPanelProps) {
 const TestFlowsPage: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingFlow, setEditingFlow] = useState<TestFlow | null>(null);
   const [newFlow, setNewFlow] = useState<{
     name: string;
     description: string;
@@ -79,6 +81,7 @@ const TestFlowsPage: React.FC = () => {
   const { user } = useAuth();
   const { data: testFlowsData, isLoading } = useTestFlows();
   const createFlowMutation = useCreateTestFlow();
+  const updateFlowMutation = useUpdateTestFlow();
   const deleteFlowMutation = useDeleteTestFlow();
   const executeFlowMutation = useExecuteTestFlow();
 
@@ -95,6 +98,27 @@ const TestFlowsPage: React.FC = () => {
       createFlowMutation.mutate(flowData);
       setCreateDialogOpen(false);
       setNewFlow({ name: '', description: '', status: TestFlowStatus.DRAFT, steps: [] });
+    }
+  };
+
+  const handleEditFlow = (flow: TestFlow) => {
+    setEditingFlow(flow);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateFlow = () => {
+    if (editingFlow && editingFlow.name.trim()) {
+      updateFlowMutation.mutate({ 
+        id: editingFlow.id, 
+        flow: {
+          name: editingFlow.name,
+          description: editingFlow.description,
+          status: editingFlow.status,
+          isActive: editingFlow.status === TestFlowStatus.ACTIVE,
+        }
+      });
+      setEditDialogOpen(false);
+      setEditingFlow(null);
     }
   };
 
@@ -248,7 +272,7 @@ const TestFlowsPage: React.FC = () => {
                           <IconButton
                             size="small"
                             color="default"
-                            onClick={() => console.log('Edit flow:', flow.id)}
+                            onClick={() => handleEditFlow(flow)}
                           >
                             <EditIcon />
                           </IconButton>
@@ -325,6 +349,45 @@ const TestFlowsPage: React.FC = () => {
         <DialogActions>
           <Button onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
           <Button onClick={handleCreateFlow} variant="contained">Criar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog de Edição */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Editar Fluxo de Teste</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              autoFocus
+              label="Nome do Fluxo"
+              fullWidth
+              value={editingFlow?.name || ''}
+              onChange={(e) => setEditingFlow(prev => prev ? { ...prev, name: e.target.value } : null)}
+            />
+            <TextField
+              label="Descrição"
+              fullWidth
+              multiline
+              rows={3}
+              value={editingFlow?.description || ''}
+              onChange={(e) => setEditingFlow(prev => prev ? { ...prev, description: e.target.value } : null)}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={editingFlow?.status || TestFlowStatus.DRAFT}
+                label="Status"
+                onChange={(e) => setEditingFlow(prev => prev ? { ...prev, status: e.target.value as TestFlowStatus } : null)}
+              >
+                <MenuItem value={TestFlowStatus.DRAFT}>Rascunho</MenuItem>
+                <MenuItem value={TestFlowStatus.ACTIVE}>Ativo</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={handleUpdateFlow} variant="contained">Atualizar</Button>
         </DialogActions>
       </Dialog>
     </Container>
