@@ -17,6 +17,7 @@ export declare class MCPManagerService implements OnModuleDestroy {
     stopAllServers(): Promise<void>;
     getRegisteredServers(): MCPServerConfig[];
     isServerRunning(serverName: string): boolean;
+    sendNotification(serverName: string, method: string, params?: any): Promise<void>;
     sendRequest(serverName: string, method: string, params?: any): Promise<any>;
     listTools(serverName: string): Promise<any>;
     callTool(serverName: string, toolName: string, arguments_: any): Promise<any>;

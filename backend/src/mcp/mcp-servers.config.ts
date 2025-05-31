@@ -1,4 +1,5 @@
 import { MCPServerConfig } from './mcp-manager.service';
+import * as path from 'path';
 
 export interface MCPNetworkServerConfig extends MCPServerConfig {
   networkMode?: 'stdio' | 'tcp' | 'http';
@@ -10,7 +11,7 @@ export const MCP_SERVERS_CONFIG: MCPNetworkServerConfig[] = [
   {
     name: 'playwright',
     command: 'npx',
-    args: ['@playwright/mcp', '--config', 'src/mcp/configs/playwright-config.json'],
+    args: ['@playwright/mcp', '--config', path.resolve(__dirname, 'configs', 'playwright-config.json')],
     description: 'Servidor MCP oficial do Playwright para automação de navegadores',
     env: {
       NODE_ENV: 'production'
@@ -21,7 +22,7 @@ export const MCP_SERVERS_CONFIG: MCPNetworkServerConfig[] = [
   {
     name: 'playwright-tcp',
     command: 'npx',
-    args: ['@playwright/mcp', '--config', 'src/mcp/configs/playwright-config.json', '--transport', 'tcp', '--port', '3002'],
+    args: ['@playwright/mcp', '--config', path.resolve(__dirname, 'configs', 'playwright-config.json'), '--transport', 'tcp', '--port', '3002'],
     description: 'Servidor MCP Playwright via TCP para clientes externos',
     env: {
       NODE_ENV: 'production'

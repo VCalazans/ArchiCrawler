@@ -1,22 +1,24 @@
 import { MCPManagerService } from '../mcp/mcp-manager.service';
-export interface TestStepConfig {
+export interface ExecutionStep {
     id: string;
     name: string;
-    type: string;
-    config: any;
+    type: 'navigate' | 'click' | 'fill' | 'screenshot' | 'wait' | 'assert' | 'extract';
+    config: Record<string, any>;
     timeout?: number;
     continueOnError?: boolean;
 }
+export interface ExecutionResult {
+    success: boolean;
+    stepId: string;
+    duration: number;
+    error?: string;
+    data?: any;
+}
 export declare class PlaywrightExecutorService {
-    private readonly mcpManager;
+    private mcpManager;
     private readonly logger;
     constructor(mcpManager: MCPManagerService);
-    executeStep(step: TestStepConfig): Promise<{
-        success: boolean;
-        result?: any;
-        error?: string;
-        duration: number;
-    }>;
+    executeStep(step: ExecutionStep): Promise<ExecutionResult>;
     private executeNavigate;
     private executeClick;
     private executeFill;
@@ -25,6 +27,6 @@ export declare class PlaywrightExecutorService {
     private executeAssert;
     private executeExtract;
     isPlaywrightAvailable(): Promise<boolean>;
-    initializeBrowser(): Promise<void>;
-    closeBrowser(): Promise<void>;
+    getAvailableTools(): Promise<any>;
+    getPageSnapshot(): Promise<any>;
 }
