@@ -1,5 +1,6 @@
 export declare class GeneratedTest {
     id: string;
+    userId: string;
     name: string;
     description: string;
     targetUrl: string;

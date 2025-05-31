@@ -5,9 +5,8 @@ export class GeneratedTest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Removido temporariamente até migração do banco
-  // @Column()
-  // userId: string;
+  @Column()
+  userId: string;
 
   @Column()
   name: string;

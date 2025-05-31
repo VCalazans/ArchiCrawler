@@ -47,6 +47,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
             const validationResult = await this.testValidator.validateGeneratedTest(generatedResult);
             this.logger.debug(`Validação concluída - Score: ${validationResult.score}%`);
             const generatedTest = this.generatedTestRepository.create({
+                userId: request.userId,
                 name: this.generateTestName(request),
                 description: request.testDescription,
                 targetUrl: request.targetUrl,
@@ -107,6 +108,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
         try {
             const queryBuilder = this.generatedTestRepository
                 .createQueryBuilder('test')
+                .where('test.userId = :userId', { userId })
                 .orderBy('test.createdAt', 'DESC');
             if (filters?.testType) {
                 queryBuilder.andWhere('test.testType = :testType', { testType: filters.testType });
@@ -130,7 +132,7 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     async getTestById(id, userId) {
         try {
             const test = await this.generatedTestRepository.findOne({
-                where: { id }
+                where: { id, userId }
             });
             if (!test) {
                 throw new Error('Teste não encontrado');
@@ -160,7 +162,8 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     async deleteTest(id, userId) {
         try {
             const result = await this.generatedTestRepository.delete({
-                id
+                id,
+                userId
             });
             if (result.affected === 0) {
                 throw new Error('Teste não encontrado');
@@ -174,7 +177,9 @@ let LLMTestGeneratorService = LLMTestGeneratorService_1 = class LLMTestGenerator
     }
     async getTestStatistics(userId) {
         try {
-            const tests = await this.generatedTestRepository.find({});
+            const tests = await this.generatedTestRepository.find({
+                where: { userId }
+            });
             const stats = {
                 total: tests.length,
                 byType: {},

@@ -38,14 +38,8 @@ export class PlaywrightMCPService {
    * Navega para uma URL
    */
   async navigate(url: string, options?: { waitUntil?: string; timeout?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_navigate', {
-      url,
-      browserType: 'chromium',
-      headless: false, // Para testes LLM queremos ver o que está acontecendo
-      waitUntil: options?.waitUntil || 'domcontentloaded',
-      timeout: options?.timeout || 30000,
-      width: 1280,
-      height: 720
+    return this.callPlaywrightTool('browser_navigate', {
+      url
     });
   }
 
@@ -53,9 +47,12 @@ export class PlaywrightMCPService {
    * Clica em um elemento
    */
   async click(selector: string, options?: { timeout?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_click', {
-      selector,
-      timeout: options?.timeout || 10000
+    // Para click precisamos obter snapshot primeiro para ter o 'ref'
+    const snapshot = await this.callPlaywrightTool('browser_snapshot');
+    
+    return this.callPlaywrightTool('browser_click', {
+      element: selector, // descrição humana
+      ref: selector // usar selector como ref temporariamente
     });
   }
 
@@ -63,10 +60,13 @@ export class PlaywrightMCPService {
    * Preenche um campo
    */
   async fill(selector: string, value: string, options?: { timeout?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_fill', {
-      selector,
-      value,
-      timeout: options?.timeout || 10000
+    // Para type precisamos obter snapshot primeiro para ter o 'ref'
+    const snapshot = await this.callPlaywrightTool('browser_snapshot');
+    
+    return this.callPlaywrightTool('browser_type', {
+      element: selector, // descrição humana
+      ref: selector, // usar selector como ref temporariamente
+      text: value
     });
   }
 
@@ -74,9 +74,11 @@ export class PlaywrightMCPService {
    * Hover sobre um elemento
    */
   async hover(selector: string, options?: { timeout?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_hover', {
-      selector,
-      timeout: options?.timeout || 10000
+    const snapshot = await this.callPlaywrightTool('browser_snapshot');
+    
+    return this.callPlaywrightTool('browser_hover', {
+      element: selector,
+      ref: selector
     });
   }
 
@@ -84,10 +86,12 @@ export class PlaywrightMCPService {
    * Seleciona uma opção
    */
   async select(selector: string, value: string, options?: { timeout?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_select', {
-      selector,
-      value,
-      timeout: options?.timeout || 10000
+    const snapshot = await this.callPlaywrightTool('browser_snapshot');
+    
+    return this.callPlaywrightTool('browser_select_option', {
+      element: selector,
+      ref: selector,
+      values: [value]
     });
   }
 
@@ -95,10 +99,8 @@ export class PlaywrightMCPService {
    * Aguarda um tempo
    */
   async wait(milliseconds: number): Promise<any> {
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve({ waited: milliseconds });
-      }, milliseconds);
+    return this.callPlaywrightTool('browser_wait_for', {
+      time: milliseconds / 1000 // converter para segundos
     });
   }
 
@@ -106,11 +108,9 @@ export class PlaywrightMCPService {
    * Captura screenshot
    */
   async screenshot(name?: string, options?: { fullPage?: boolean }): Promise<any> {
-    return this.callPlaywrightTool('playwright_screenshot', {
-      name: name || `screenshot-${Date.now()}`,
-      fullPage: options?.fullPage || false,
-      storeBase64: true,
-      savePng: true
+    return this.callPlaywrightTool('browser_take_screenshot', {
+      filename: name || `screenshot-${Date.now()}.png`,
+      raw: false // JPEG por padrão
     });
   }
 
@@ -118,73 +118,65 @@ export class PlaywrightMCPService {
    * Pressiona uma tecla
    */
   async pressKey(key: string, selector?: string): Promise<any> {
-    return this.callPlaywrightTool('playwright_press_key', {
-      key,
-      selector
+    return this.callPlaywrightTool('browser_press_key', {
+      key
     });
   }
 
   /**
-   * Obtém texto visível da página
+   * Obtém texto visível da página via snapshot
    */
   async getVisibleText(): Promise<any> {
-    return this.callPlaywrightTool('playwright_get_visible_text', {
-      random_string: 'get_text'
-    });
+    return this.callPlaywrightTool('browser_snapshot');
   }
 
   /**
-   * Obtém HTML da página
+   * Obtém HTML da página via snapshot
    */
   async getVisibleHtml(): Promise<any> {
-    return this.callPlaywrightTool('playwright_get_visible_html', {
-      random_string: 'get_html'
-    });
+    return this.callPlaywrightTool('browser_snapshot');
   }
 
   /**
    * Vai para a página anterior
    */
   async goBack(): Promise<any> {
-    return this.callPlaywrightTool('playwright_go_back', {
-      random_string: 'go_back'
-    });
+    return this.callPlaywrightTool('browser_navigate_back');
   }
 
   /**
    * Vai para a próxima página
    */
   async goForward(): Promise<any> {
-    return this.callPlaywrightTool('playwright_go_forward', {
-      random_string: 'go_forward'
-    });
+    return this.callPlaywrightTool('browser_navigate_forward');
   }
 
   /**
    * Fecha o navegador
    */
   async close(): Promise<any> {
-    return this.callPlaywrightTool('playwright_close', {
-      random_string: 'close'
-    });
+    return this.callPlaywrightTool('browser_close');
   }
 
   /**
-   * Executa JavaScript na página
+   * Executa JavaScript na página (não disponível diretamente)
    */
   async evaluate(script: string): Promise<any> {
-    return this.callPlaywrightTool('playwright_evaluate', {
-      script
-    });
+    // Esta funcionalidade não está disponível diretamente no MCP
+    throw new Error('JavaScript evaluation não disponível via MCP Playwright');
   }
 
   /**
    * Drag and drop
    */
   async drag(sourceSelector: string, targetSelector: string): Promise<any> {
-    return this.callPlaywrightTool('playwright_drag', {
-      sourceSelector,
-      targetSelector
+    const snapshot = await this.callPlaywrightTool('browser_snapshot');
+    
+    return this.callPlaywrightTool('browser_drag', {
+      startElement: sourceSelector,
+      startRef: sourceSelector,
+      endElement: targetSelector,
+      endRef: targetSelector
     });
   }
 
@@ -192,12 +184,7 @@ export class PlaywrightMCPService {
    * Obtém logs do console
    */
   async getConsoleLogs(options?: { type?: string; search?: string; limit?: number }): Promise<any> {
-    return this.callPlaywrightTool('playwright_console_logs', {
-      type: options?.type || 'all',
-      search: options?.search,
-      limit: options?.limit || 50,
-      clear: false
-    });
+    return this.callPlaywrightTool('browser_console_messages');
   }
 
   /**

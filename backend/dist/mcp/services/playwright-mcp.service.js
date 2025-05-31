@@ -38,106 +38,85 @@ let PlaywrightMCPService = PlaywrightMCPService_1 = class PlaywrightMCPService {
         }
     }
     async navigate(url, options) {
-        return this.callPlaywrightTool('playwright_navigate', {
-            url,
-            browserType: 'chromium',
-            headless: false,
-            waitUntil: options?.waitUntil || 'domcontentloaded',
-            timeout: options?.timeout || 30000,
-            width: 1280,
-            height: 720
+        return this.callPlaywrightTool('browser_navigate', {
+            url
         });
     }
     async click(selector, options) {
-        return this.callPlaywrightTool('playwright_click', {
-            selector,
-            timeout: options?.timeout || 10000
+        const snapshot = await this.callPlaywrightTool('browser_snapshot');
+        return this.callPlaywrightTool('browser_click', {
+            element: selector,
+            ref: selector
         });
     }
     async fill(selector, value, options) {
-        return this.callPlaywrightTool('playwright_fill', {
-            selector,
-            value,
-            timeout: options?.timeout || 10000
+        const snapshot = await this.callPlaywrightTool('browser_snapshot');
+        return this.callPlaywrightTool('browser_type', {
+            element: selector,
+            ref: selector,
+            text: value
         });
     }
     async hover(selector, options) {
-        return this.callPlaywrightTool('playwright_hover', {
-            selector,
-            timeout: options?.timeout || 10000
+        const snapshot = await this.callPlaywrightTool('browser_snapshot');
+        return this.callPlaywrightTool('browser_hover', {
+            element: selector,
+            ref: selector
         });
     }
     async select(selector, value, options) {
-        return this.callPlaywrightTool('playwright_select', {
-            selector,
-            value,
-            timeout: options?.timeout || 10000
+        const snapshot = await this.callPlaywrightTool('browser_snapshot');
+        return this.callPlaywrightTool('browser_select_option', {
+            element: selector,
+            ref: selector,
+            values: [value]
         });
     }
     async wait(milliseconds) {
-        return new Promise(resolve => {
-            setTimeout(() => {
-                resolve({ waited: milliseconds });
-            }, milliseconds);
+        return this.callPlaywrightTool('browser_wait_for', {
+            time: milliseconds / 1000
         });
     }
     async screenshot(name, options) {
-        return this.callPlaywrightTool('playwright_screenshot', {
-            name: name || `screenshot-${Date.now()}`,
-            fullPage: options?.fullPage || false,
-            storeBase64: true,
-            savePng: true
+        return this.callPlaywrightTool('browser_take_screenshot', {
+            filename: name || `screenshot-${Date.now()}.png`,
+            raw: false
         });
     }
     async pressKey(key, selector) {
-        return this.callPlaywrightTool('playwright_press_key', {
-            key,
-            selector
+        return this.callPlaywrightTool('browser_press_key', {
+            key
         });
     }
     async getVisibleText() {
-        return this.callPlaywrightTool('playwright_get_visible_text', {
-            random_string: 'get_text'
-        });
+        return this.callPlaywrightTool('browser_snapshot');
     }
     async getVisibleHtml() {
-        return this.callPlaywrightTool('playwright_get_visible_html', {
-            random_string: 'get_html'
-        });
+        return this.callPlaywrightTool('browser_snapshot');
     }
     async goBack() {
-        return this.callPlaywrightTool('playwright_go_back', {
-            random_string: 'go_back'
-        });
+        return this.callPlaywrightTool('browser_navigate_back');
     }
     async goForward() {
-        return this.callPlaywrightTool('playwright_go_forward', {
-            random_string: 'go_forward'
-        });
+        return this.callPlaywrightTool('browser_navigate_forward');
     }
     async close() {
-        return this.callPlaywrightTool('playwright_close', {
-            random_string: 'close'
-        });
+        return this.callPlaywrightTool('browser_close');
     }
     async evaluate(script) {
-        return this.callPlaywrightTool('playwright_evaluate', {
-            script
-        });
+        throw new Error('JavaScript evaluation não disponível via MCP Playwright');
     }
     async drag(sourceSelector, targetSelector) {
-        return this.callPlaywrightTool('playwright_drag', {
-            sourceSelector,
-            targetSelector
+        const snapshot = await this.callPlaywrightTool('browser_snapshot');
+        return this.callPlaywrightTool('browser_drag', {
+            startElement: sourceSelector,
+            startRef: sourceSelector,
+            endElement: targetSelector,
+            endRef: targetSelector
         });
     }
     async getConsoleLogs(options) {
-        return this.callPlaywrightTool('playwright_console_logs', {
-            type: options?.type || 'all',
-            search: options?.search,
-            limit: options?.limit || 50,
-            clear: false
-        });
+        return this.callPlaywrightTool('browser_console_messages');
     }
     async checkHealth() {
         try {

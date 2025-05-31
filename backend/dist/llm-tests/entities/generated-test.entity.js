@@ -21,6 +21,10 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
+], GeneratedTest.prototype, "userId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
 ], GeneratedTest.prototype, "name", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text' }),
