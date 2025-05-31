@@ -21,9 +21,15 @@ import { TestValidatorService } from './services/test-validator.service';
 import { LLMTestGeneratorService } from './services/llm-test-generator.service';
 import { LLMTestExecutionService } from './services/llm-test-execution.service';
 
+// 🚀 NOVOS SERVIÇOS DINÂMICOS
+import { DynamicTestAgentService } from './services/dynamic-test-agent.service';
+import { RealtimeMCPBridge } from './services/realtime-mcp-bridge.service';
+import { IntelligentContextManager } from './services/intelligent-context-manager.service';
+
 // Controllers
 import { ApiKeysController } from './controllers/api-keys.controller';
 import { TestGenerationController } from './controllers/test-generation.controller';
+import { DynamicTestChatController } from './controllers/dynamic-test-chat.controller';
 
 // MCP Integration
 import { MCPModule } from '../mcp/mcp.module';
@@ -43,6 +49,7 @@ import { PlaywrightMCPService } from '../mcp/services/playwright-mcp.service';
   controllers: [
     ApiKeysController,
     TestGenerationController,
+    DynamicTestChatController,
   ],
   providers: [
     // LLM Providers
@@ -50,13 +57,18 @@ import { PlaywrightMCPService } from '../mcp/services/playwright-mcp.service';
     AnthropicProvider,
     GeminiProvider,
     
-    // Services
+    // Core Services
     LLMProviderFactory,
     ApiKeyManagerService,
     TestPromptBuilderService,
     TestValidatorService,
     LLMTestGeneratorService,
     LLMTestExecutionService,
+    
+    // 🚀 NOVOS SERVIÇOS DINÂMICOS
+    DynamicTestAgentService,
+    RealtimeMCPBridge,
+    IntelligentContextManager,
     
     // MCP Services
     PlaywrightMCPService,
@@ -68,6 +80,12 @@ import { PlaywrightMCPService } from '../mcp/services/playwright-mcp.service';
     TestValidatorService,
     LLMTestGeneratorService,
     LLMTestExecutionService,
+    
+    // 🚀 EXPORTAR NOVOS SERVIÇOS
+    DynamicTestAgentService,
+    RealtimeMCPBridge,
+    IntelligentContextManager,
+    
     OpenAIProvider,
     AnthropicProvider,
     GeminiProvider,

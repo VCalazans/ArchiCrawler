@@ -23,8 +23,12 @@ const test_prompt_builder_service_1 = require("./services/test-prompt-builder.se
 const test_validator_service_1 = require("./services/test-validator.service");
 const llm_test_generator_service_1 = require("./services/llm-test-generator.service");
 const llm_test_execution_service_1 = require("./services/llm-test-execution.service");
+const dynamic_test_agent_service_1 = require("./services/dynamic-test-agent.service");
+const realtime_mcp_bridge_service_1 = require("./services/realtime-mcp-bridge.service");
+const intelligent_context_manager_service_1 = require("./services/intelligent-context-manager.service");
 const api_keys_controller_1 = require("./controllers/api-keys.controller");
 const test_generation_controller_1 = require("./controllers/test-generation.controller");
+const dynamic_test_chat_controller_1 = require("./controllers/dynamic-test-chat.controller");
 const mcp_module_1 = require("../mcp/mcp.module");
 const playwright_mcp_service_1 = require("../mcp/services/playwright-mcp.service");
 let LLMTestsModule = class LLMTestsModule {
@@ -45,6 +49,7 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
         controllers: [
             api_keys_controller_1.ApiKeysController,
             test_generation_controller_1.TestGenerationController,
+            dynamic_test_chat_controller_1.DynamicTestChatController,
         ],
         providers: [
             openai_provider_1.OpenAIProvider,
@@ -56,6 +61,9 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
             test_validator_service_1.TestValidatorService,
             llm_test_generator_service_1.LLMTestGeneratorService,
             llm_test_execution_service_1.LLMTestExecutionService,
+            dynamic_test_agent_service_1.DynamicTestAgentService,
+            realtime_mcp_bridge_service_1.RealtimeMCPBridge,
+            intelligent_context_manager_service_1.IntelligentContextManager,
             playwright_mcp_service_1.PlaywrightMCPService,
         ],
         exports: [
@@ -65,6 +73,9 @@ exports.LLMTestsModule = LLMTestsModule = __decorate([
             test_validator_service_1.TestValidatorService,
             llm_test_generator_service_1.LLMTestGeneratorService,
             llm_test_execution_service_1.LLMTestExecutionService,
+            dynamic_test_agent_service_1.DynamicTestAgentService,
+            realtime_mcp_bridge_service_1.RealtimeMCPBridge,
+            intelligent_context_manager_service_1.IntelligentContextManager,
             openai_provider_1.OpenAIProvider,
             anthropic_provider_1.AnthropicProvider,
             gemini_provider_1.GeminiProvider,

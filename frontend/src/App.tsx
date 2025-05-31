@@ -12,6 +12,7 @@ import ScrapingPage from './pages/ScrapingPage';
 import MCPPage from './pages/MCPPage';
 import SettingsPage from './pages/SettingsPage';
 import LLMTestsPage from './pages/LLMTestsPage';
+import { DynamicTestPage } from './pages/DynamicTestPage';
 
 // Criar instância do QueryClient
 const queryClient = new QueryClient({
@@ -371,6 +372,17 @@ const App: React.FC = () => {
                   <ProtectedRoute>
                     <MainLayout>
                       <LLMTestsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/dynamic-test"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <DynamicTestPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }
