@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '../auth/entities/user.entity';
 import { ApiKey } from '../auth/entities/api-key.entity';
 import { MCPClient } from '../auth/entities/mcp-client.entity';
+import { TestFlow } from '../entities/test-flow.entity';
+import { TestExecution } from '../entities/test-execution.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { MCPClient } from '../auth/entities/mcp-client.entity';
         username: configService.get('DB_USERNAME') || 'archicode',
         password: configService.get('DB_PASSWORD') || '#Archicode2025',
         database: configService.get('DB_DATABASE') || 'archicrawler',
-        entities: [User, ApiKey, MCPClient],
+        entities: [User, ApiKey, MCPClient, TestFlow, TestExecution],
         synchronize: false, // Desabilitado - usar migrações manuais
         logging: configService.get('NODE_ENV') === 'development',
         ssl: false, // Desabilitar SSL

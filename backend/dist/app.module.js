@@ -16,6 +16,7 @@ const core_module_1 = require("./core/core.module");
 const health_module_1 = require("./health/health.module");
 const mcp_module_1 = require("./mcp/mcp.module");
 const auth_module_1 = require("./auth/auth.module");
+const test_flows_module_1 = require("./test-flows/test-flows.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,6 +37,7 @@ exports.AppModule = AppModule = __decorate([
             core_module_1.CoreModule,
             health_module_1.HealthModule,
             mcp_module_1.MCPModule,
+            test_flows_module_1.TestFlowsModule,
         ],
     })
 ], AppModule);

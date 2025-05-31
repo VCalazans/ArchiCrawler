@@ -9,21 +9,20 @@ interface NotificationContextType {
 
 export const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-// Hook temporário simplificado para evitar erros
+// Hook simplificado que funciona sem Provider
 export const useNotification = () => {
-  // Retorna um mock simples se não houver contexto
   const context = useContext(NotificationContext);
   
+  // Se não há contexto, retorna implementação mock
   if (!context) {
-    // Fallback temporário para evitar erro
     return {
       showNotification: (notification: Omit<Notification, 'id'>) => {
-        console.log('Notification:', notification.title, '-', notification.message);
+        console.log(`[${notification.type?.toUpperCase()}] ${notification.title}:`, notification.message);
       },
       hideNotification: (id: string) => {
         console.log('Hide notification:', id);
       },
-      notifications: [] as Notification[],
+      notifications: [],
     };
   }
   

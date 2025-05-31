@@ -13,6 +13,8 @@ const config_1 = require("@nestjs/config");
 const user_entity_1 = require("../auth/entities/user.entity");
 const api_key_entity_1 = require("../auth/entities/api-key.entity");
 const mcp_client_entity_1 = require("../auth/entities/mcp-client.entity");
+const test_flow_entity_1 = require("../entities/test-flow.entity");
+const test_execution_entity_1 = require("../entities/test-execution.entity");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -28,7 +30,7 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     username: configService.get('DB_USERNAME') || 'archicode',
                     password: configService.get('DB_PASSWORD') || '#Archicode2025',
                     database: configService.get('DB_DATABASE') || 'archicrawler',
-                    entities: [user_entity_1.User, api_key_entity_1.ApiKey, mcp_client_entity_1.MCPClient],
+                    entities: [user_entity_1.User, api_key_entity_1.ApiKey, mcp_client_entity_1.MCPClient, test_flow_entity_1.TestFlow, test_execution_entity_1.TestExecution],
                     synchronize: false,
                     logging: configService.get('NODE_ENV') === 'development',
                     ssl: false,

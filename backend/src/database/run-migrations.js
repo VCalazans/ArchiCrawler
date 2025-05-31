@@ -20,7 +20,8 @@ async function runMigrations() {
     // Lista de arquivos de migração em ordem
     const migrationFiles = [
       '001-create-auth-tables.sql',
-      '002-insert-initial-data.sql'
+      '002-insert-initial-data.sql',
+      '003-create-test-flows-tables.sql'
     ];
 
     for (const fileName of migrationFiles) {
@@ -54,14 +55,14 @@ async function runMigrations() {
         hastriggers
       FROM pg_tables 
       WHERE schemaname = 'public' 
-      AND tablename IN ('users', 'api_keys', 'mcp_clients')
+      AND tablename IN ('users', 'api_keys', 'mcp_clients', 'test_flows', 'test_executions')
       ORDER BY tablename;
     `;
     
     const tablesResult = await client.query(tablesQuery);
     
     if (tablesResult.rows.length === 0) {
-      console.log('⚠️  Nenhuma tabela de autenticação encontrada!');
+      console.log('⚠️  Nenhuma tabela encontrada!');
     } else {
       console.log('📋 Tabelas criadas:');
       tablesResult.rows.forEach(row => {
@@ -89,12 +90,24 @@ async function runMigrations() {
         'mcp_clients' as tabela,
         COUNT(*) as total,
         COUNT(CASE WHEN "isActive" = true THEN 1 END) as ativos
-      FROM mcp_clients;
+      FROM mcp_clients
+      UNION ALL
+      SELECT 
+        'test_flows' as tabela,
+        COUNT(*) as total,
+        COUNT(CASE WHEN is_active = true THEN 1 END) as ativos
+      FROM test_flows
+      UNION ALL
+      SELECT 
+        'test_executions' as tabela,
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'success' THEN 1 END) as sucessos
+      FROM test_executions;
     `;
     
     const dataResult = await client.query(dataQuery);
     dataResult.rows.forEach(row => {
-      console.log(`   📊 ${row.tabela}: ${row.total} total, ${row.ativos} ativos`);
+      console.log(`   📊 ${row.tabela}: ${row.total} total, ${row.ativos || row.sucessos} ativos/sucessos`);
     });
 
     console.log('\n🎉 Migrações concluídas com sucesso!');
@@ -105,6 +118,8 @@ async function runMigrations() {
     console.log('   🔑 Test API Key: ak_test_user_key_2024_archicrawler_limited');
     console.log('   🤖 Default MCP Client: mcp_archicrawler_default_client_2024');
     console.log('   🤖 Dev MCP Client: mcp_dev_client_archicrawler_2024');
+    console.log('\n🧪 Test Flows:');
+    console.log('   🔄 Exemplo de fluxo de teste criado para demonstração');
 
   } catch (error) {
     console.error('❌ Erro durante as migrações:', error.message);

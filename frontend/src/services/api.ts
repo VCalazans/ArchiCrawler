@@ -307,5 +307,6 @@ class ApiService {
   }
 }
 
+// Exportar instância singleton
 export const apiService = new ApiService();
 export default apiService; 
