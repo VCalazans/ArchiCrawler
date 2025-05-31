@@ -23,9 +23,9 @@ export class TestFlowsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createTestFlowDto: CreateTestFlowDto) {
-    // TODO: Usar userId do usuário autenticado quando autenticação estiver implementada
-    if (!createTestFlowDto.userId) {
-      createTestFlowDto.userId = 'default-user';
+    // Se userId não for fornecido ou for vazio, usar o admin padrão
+    if (!createTestFlowDto.userId || createTestFlowDto.userId.trim() === '') {
+      createTestFlowDto.userId = '00000000-0000-0000-0000-000000000001'; // UUID do admin
     }
     
     const testFlow = await this.testFlowsService.create(createTestFlowDto);
@@ -91,7 +91,7 @@ export class TestFlowsController {
   @Post(':id/execute')
   @HttpCode(HttpStatus.ACCEPTED)
   async execute(@Param('id') id: string) {
-    const execution = await this.testFlowsService.execute(id, 'default-user');
+    const execution = await this.testFlowsService.execute(id, '00000000-0000-0000-0000-000000000001'); // UUID do admin
     
     return {
       success: true,

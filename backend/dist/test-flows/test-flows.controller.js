@@ -23,8 +23,8 @@ let TestFlowsController = class TestFlowsController {
         this.testFlowsService = testFlowsService;
     }
     async create(createTestFlowDto) {
-        if (!createTestFlowDto.userId) {
-            createTestFlowDto.userId = 'default-user';
+        if (!createTestFlowDto.userId || createTestFlowDto.userId.trim() === '') {
+            createTestFlowDto.userId = '00000000-0000-0000-0000-000000000001';
         }
         const testFlow = await this.testFlowsService.create(createTestFlowDto);
         return {
@@ -69,7 +69,7 @@ let TestFlowsController = class TestFlowsController {
         };
     }
     async execute(id) {
-        const execution = await this.testFlowsService.execute(id, 'default-user');
+        const execution = await this.testFlowsService.execute(id, '00000000-0000-0000-0000-000000000001');
         return {
             success: true,
             data: execution,

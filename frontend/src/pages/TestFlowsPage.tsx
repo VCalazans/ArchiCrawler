@@ -37,6 +37,7 @@ import AutomatedTestSuite from '../components/TestBuilder/AutomatedTestSuite';
 import VisualRegressionTester from '../components/TestBuilder/VisualRegressionTester';
 import PerformanceMonitor from '../components/TestBuilder/PerformanceMonitor';
 import { TestFlowStatus } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -75,6 +76,7 @@ const TestFlowsPage: React.FC = () => {
     steps: [],
   });
 
+  const { user } = useAuth();
   const { data: testFlowsData, isLoading } = useTestFlows();
   const createFlowMutation = useCreateTestFlow();
   const deleteFlowMutation = useDeleteTestFlow();
@@ -84,11 +86,13 @@ const TestFlowsPage: React.FC = () => {
 
   const handleCreateFlow = () => {
     if (newFlow.name.trim()) {
-      createFlowMutation.mutate({
+      const flowData = {
         ...newFlow,
-        userId: 'current-user',
         isActive: newFlow.status === TestFlowStatus.ACTIVE,
-      });
+        userId: user?.id || '',
+      };
+      
+      createFlowMutation.mutate(flowData);
       setCreateDialogOpen(false);
       setNewFlow({ name: '', description: '', status: TestFlowStatus.DRAFT, steps: [] });
     }
