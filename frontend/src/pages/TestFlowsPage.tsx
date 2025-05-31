@@ -1,12 +1,10 @@
 import React, { useState, Suspense } from 'react';
 import {
   Container,
-  Grid,
   Card,
   CardContent,
   Typography,
   Button,
-  Fab,
   CircularProgress,
   Box,
   Chip,
@@ -190,9 +188,9 @@ const TestFlowsPage: React.FC = () => {
           </Box>
         ) : (
           <AnimatePresence>
-            <Grid container spacing={3}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
               {testFlows.map((flow, index) => (
-                <Grid item xs={12} md={6} lg={4} key={flow.id}>
+                <Box key={flow.id} sx={{ width: { xs: '100%', md: 'calc(50% - 12px)', lg: 'calc(33.333% - 16px)' } }}>
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -262,9 +260,9 @@ const TestFlowsPage: React.FC = () => {
                       </CardContent>
                     </Card>
                   </motion.div>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </AnimatePresence>
         )}
       </TabPanel>
