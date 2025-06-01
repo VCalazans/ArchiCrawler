@@ -129,6 +129,12 @@ let DynamicTestChatController = DynamicTestChatController_1 = class DynamicTestC
                             hasChanges: stepCount > 0
                         },
                         changes: [],
+                        performance: {
+                            loadTime: 800 + Math.random() * 500,
+                            domContentLoaded: 600 + Math.random() * 300,
+                            networkRequests: Math.floor(Math.random() * 5) + 1,
+                            errors: []
+                        },
                         screenshot: `data:image/png;base64,mock-screenshot-${stepCount}`
                     },
                     context: {
@@ -156,7 +162,28 @@ let DynamicTestChatController = DynamicTestChatController_1 = class DynamicTestC
                         isComplete: stepCount === maxSteps - 1,
                         confidence: 85 + stepCount * 3,
                         nextPossibleActions: [],
-                        llmThoughts: `Executando passo ${stepCount + 1}: ${mockSteps[stepCount]}`
+                        llmThoughts: `Executando passo ${stepCount + 1}: ${mockSteps[stepCount]}`,
+                        contextWindow: {
+                            maxTokens: 4000,
+                            currentTokens: 1500 + stepCount * 200,
+                            priorityChunks: [],
+                            relevanceThreshold: 0.7,
+                            lastOptimization: new Date()
+                        },
+                        actionMemory: {
+                            recentActions: [],
+                            successPatterns: [],
+                            failurePatterns: [],
+                            loopDetection: []
+                        },
+                        executionState: {
+                            currentPhase: 'exploration',
+                            adaptationLevel: 0.5,
+                            patternConfidence: 0.8,
+                            explorationBudget: 10 - stepCount,
+                            lastDecisionTime: new Date(),
+                            decisionFactors: []
+                        }
                     },
                     timestamp: new Date(),
                     duration: 1500 + Math.random() * 1000,

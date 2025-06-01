@@ -14,7 +14,7 @@ export declare class TestGenerationController {
         data: {
             id: string;
             name: string;
-            status: "draft" | "validated" | "active" | "failed" | "archived";
+            status: "draft" | "active" | "archived" | "failed" | "validated";
             testType: string;
             targetUrl: string;
             llmProvider: string;
@@ -35,7 +35,7 @@ export declare class TestGenerationController {
             id: string;
             name: string;
             description: string;
-            status: "draft" | "validated" | "active" | "failed" | "archived";
+            status: "draft" | "active" | "archived" | "failed" | "validated";
             testType: string;
             targetUrl: string;
             llmProvider: string;
@@ -66,7 +66,7 @@ export declare class TestGenerationController {
             id: string;
             name: string;
             description: string;
-            status: "draft" | "validated" | "active" | "failed" | "archived";
+            status: "draft" | "active" | "archived" | "failed" | "validated";
             testType: string;
             targetUrl: string;
             llmProvider: string;
@@ -91,7 +91,7 @@ export declare class TestGenerationController {
         message: string;
         data: {
             id: string;
-            status: "draft" | "validated" | "active" | "failed" | "archived";
+            status: "draft" | "active" | "archived" | "failed" | "validated";
             updatedAt: Date;
         };
     }>;
@@ -102,7 +102,7 @@ export declare class TestGenerationController {
             originalId: string;
             newId: string;
             name: string;
-            status: "draft" | "validated" | "active" | "failed" | "archived";
+            status: "draft" | "active" | "archived" | "failed" | "validated";
             validationResult: any;
             metadata: {
                 tokensUsed?: number;

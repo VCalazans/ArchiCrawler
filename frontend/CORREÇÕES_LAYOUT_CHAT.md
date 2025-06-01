@@ -213,4 +213,30 @@ useEffect(() => {
 └─────────────────────────────────────────┘
 ```
 
-**🎉 Interface agora está totalmente funcional e com debugging automático!** 
+**🎉 Interface agora está totalmente funcional e com debugging automático!**
+
+---
+
+## 🔧 **Correção Adicional - Sistema Dinâmico**
+
+### **❌ Problema Backend Identificado:**
+O sistema dinâmico estava usando o parser tradicional do OpenAI que esperava estrutura `{testName, description, mcpCommands}`, mas o sistema dinâmico retorna `{strategy, initialAction, confidence}`.
+
+### **✅ Solução Aplicada:**
+Criado método `callLLMDirectly()` no `DynamicTestAgentService` que chama as APIs dos LLMs diretamente, sem usar o parser tradicional.
+
+```typescript
+// ❌ Antes (conflito de parser)
+const response = await provider.generateTest(prompt, apiKey);
+const parsed = JSON.parse(response.testCode); // Erro: estrutura incompatível
+
+// ✅ Agora (chamada direta)  
+const response = await this.callLLMDirectly(provider, prompt, apiKey);
+const parsed = JSON.parse(response); // Sucesso: JSON puro
+```
+
+### **🚀 Resultado:**
+- ✅ Sistema dinâmico funciona sem conflitos de parsing
+- ✅ Frontend conecta corretamente (porta 3000)
+- ✅ Backend processa objetivos em linguagem natural
+- ✅ Interface mostra status em tempo real

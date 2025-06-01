@@ -178,6 +178,12 @@ export class DynamicTestChatController {
               hasChanges: stepCount > 0
             },
             changes: [],
+            performance: {
+              loadTime: 800 + Math.random() * 500,
+              domContentLoaded: 600 + Math.random() * 300,
+              networkRequests: Math.floor(Math.random() * 5) + 1,
+              errors: []
+            },
             screenshot: `data:image/png;base64,mock-screenshot-${stepCount}`
           },
           context: {
@@ -205,7 +211,29 @@ export class DynamicTestChatController {
             isComplete: stepCount === maxSteps - 1,
             confidence: 85 + stepCount * 3,
             nextPossibleActions: [],
-            llmThoughts: `Executando passo ${stepCount + 1}: ${mockSteps[stepCount]}`
+            llmThoughts: `Executando passo ${stepCount + 1}: ${mockSteps[stepCount]}`,
+            // 🧠 Propriedades do sistema dinâmico
+            contextWindow: {
+              maxTokens: 4000,
+              currentTokens: 1500 + stepCount * 200,
+              priorityChunks: [],
+              relevanceThreshold: 0.7,
+              lastOptimization: new Date()
+            },
+            actionMemory: {
+              recentActions: [],
+              successPatterns: [],
+              failurePatterns: [],
+              loopDetection: []
+            },
+            executionState: {
+              currentPhase: 'exploration' as const,
+              adaptationLevel: 0.5,
+              patternConfidence: 0.8,
+              explorationBudget: 10 - stepCount,
+              lastDecisionTime: new Date(),
+              decisionFactors: []
+            }
           },
           timestamp: new Date(),
           duration: 1500 + Math.random() * 1000,
